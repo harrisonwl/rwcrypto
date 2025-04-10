@@ -1,0 +1,119 @@
+cabal-version: 2.2
+
+-- This file has been generated from package.yaml by hpack version 0.37.0.
+--
+-- see: https://github.com/sol/hpack
+
+name:           rwcrypto
+version:        0.1.0.0
+description:    Please see the README on GitHub at <https://github.com/githubuser/rwcrypto#readme>
+homepage:       https://github.com/githubuser/rwcrypto#readme
+bug-reports:    https://github.com/githubuser/rwcrypto/issues
+author:         Author name here
+maintainer:     example@example.com
+copyright:      2025 Author name here
+license:        BSD-3-Clause
+license-file:   LICENSE
+build-type:     Simple
+extra-source-files:
+    README.md
+    CHANGELOG.md
+
+source-repository head
+  type: git
+  location: https://github.com/githubuser/rwcrypto
+
+library
+  exposed-modules:
+      Lib
+      ExecSHA256
+      ReferenceSHA256
+      TwoBlockMessage
+      ColumnRound
+      DoubleRound
+      HashSalsa20
+      Idioms
+      Iterator
+      LittleEndian
+      MNWExample
+      QuarterRound
+      ReferenceSalsa20
+      RowRound
+      RW_Salsa20
+      Salsa20Reference
+      Test_ReferenceSalsa20
+      TestRefSalsa20
+      BinaryArithmetic
+      W32
+      W6
+      W64
+      W8
+  other-modules:
+      Paths_rwcrypto
+  autogen-modules:
+      Paths_rwcrypto
+  hs-source-dirs:
+      src
+      src/sha256
+      src/salsa20
+      external/BinaryArithmetic/src
+  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints
+  build-depends:
+      base ==4.20.*
+    , directory ==1.3.*
+    , filepath ==1.5.*
+    , ghc ==9.10.*
+    , lens ==5.3.*
+    , monad-resumption
+    , mtl
+    , rewire-user ==0.2.*
+    , text ==2.1.*
+    , vector
+  default-language: Haskell2010
+
+executable rwcrypto-exe
+  main-is: Main.hs
+  other-modules:
+      Paths_rwcrypto
+  autogen-modules:
+      Paths_rwcrypto
+  hs-source-dirs:
+      app
+  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      base ==4.20.*
+    , directory ==1.3.*
+    , filepath ==1.5.*
+    , ghc ==9.10.*
+    , lens ==5.3.*
+    , monad-resumption
+    , mtl
+    , rewire-user ==0.2.*
+    , rwcrypto
+    , text ==2.1.*
+    , vector
+  default-language: Haskell2010
+
+test-suite rwcrypto-test
+  type: exitcode-stdio-1.0
+  main-is: Spec.hs
+  other-modules:
+      Paths_rwcrypto
+  autogen-modules:
+      Paths_rwcrypto
+  hs-source-dirs:
+      test
+  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      base ==4.20.*
+    , directory ==1.3.*
+    , filepath ==1.5.*
+    , ghc ==9.10.*
+    , lens ==5.3.*
+    , monad-resumption
+    , mtl
+    , rewire-user ==0.2.*
+    , rwcrypto
+    , text ==2.1.*
+    , vector
+  default-language: Haskell2010

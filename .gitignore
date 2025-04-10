@@ -1,0 +1,12 @@
+.stack-work/
+dist/
+dist-newstyle/
+*.hi
+*.*~
+*.o
+*.swp
+*.bak
+*.tmp
+tags
+TAGS.stack-work/
+*~
