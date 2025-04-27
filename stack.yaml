@@ -30,7 +30,7 @@ snapshot:
 #   - auto-update
 #   - wai
 packages:
-- external/BinaryArithmetic
+# - external/BinaryArithmetic
 - external/ReWire
 - external/ReWire/rewire-core
 - external/ReWire/rewire-embedder
