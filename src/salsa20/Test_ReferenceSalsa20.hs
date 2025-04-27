@@ -5,9 +5,11 @@ import BinaryArithmetic hiding ((^),(+))
 import W8
 import W32
 
-import Iterator
+-- import Iterator
 import Idioms
 import ReferenceSalsa20 hiding (Integer)
+
+{-
 
 -- |
 -- | Functions to test against String
@@ -167,3 +169,4 @@ ncomp n f x = let z = f x in (z `seq` (ncomp (n-1) f z))
 -- ghci> ncomp 1000000 hash_salsa20 t3 == ans3
 --   *** Exception: stack overflow
 
+-}

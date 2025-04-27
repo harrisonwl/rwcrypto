@@ -1,5 +1,5 @@
 {-# LANGUAGE DataKinds #-}
-module RW_Salsa20 where
+-- module RW_Salsa20 where
 
 -- |
 -- | This is a refactoring of the reference semantics
@@ -11,58 +11,67 @@ import ReWire
 import ReWire.Bits
 import ReWire.Vectors
 
+import ReWire.Interactive
+
 -----------------------------
 -- Definitions and helpers
 -----------------------------
 
+type W6     = W 6
+type W8     = W 8
+type W16    = W 16
+type W24    = W 24
+type W32    = W 32
+type W64    = W 64
 type Quad a = (a , a , a , a)
 type Oct a  = (a , a , a , a , a , a , a , a)
 type Hex a  = (a , a , a , a , a , a , a , a , a , a , a , a , a , a , a , a )
 data X64 a  = X64 a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a
                   a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a 
 
-type Sto     = (W 6 , W 64 , Hex (W 8) {- k0 -} , Hex (W 8) {- k1 -} , Oct (W 8) {- v -})
-data Input i = Reset i | Work (W 8)
+
+type Sto     = (W6 , W64 , Hex W8 {- k0 -} , Hex W8 {- k1 -} , Oct W8 {- v -})
+data Input i = Reset i | Work W8
 
 next :: StateT Sto Identity ()
 next = get >>= \ (z,w,k0,k1,v) -> put (z + lit 1 , w + lit 1, k0 , k1 , v)
 
-reset :: Hex (W 8) -> Hex (W 8) -> Oct (W 8) -> StateT Sto Identity ()
+reset :: Hex W8 -> Hex W8 -> Oct W8 -> StateT Sto Identity ()
 reset k0 k1 v = put (lit 0, lit 0 , k0 , k1 , v)
 
 -----
 -- | Salsa20 device, 256-bit version
 -----
 
-factorM :: StateT Sto Identity (Oct (W 8))
+factorM :: StateT Sto Identity (Oct W8)
 factorM     = get >>= \ (_,w,_,_,_) -> return (factor w)
 
 -- |
 -- | This is the infamous (_) function from Section 10. 
 -- |
-
-factor :: W 64 -> (W 8 , W 8 , W 8 , W 8 , W 8 , W 8 , W 8 , W 8 )
+factor :: W64 -> (W8 , W8 , W8 , W8 , W8 , W8 , W8 , W8 )
 factor w64 = (s0 , s1 , s2 , s3 , s4 , s5 , s6 , s7)
   where
-    s0 , s1 , s2 , s3 , s4 , s5 , s6 , s7 :: W 8
-    s0 = slice0 w64
-    s1 = slice8 w64
-    s2 = slice16 w64
-    s3 = slice24 w64
-    s4 = slice32 w64
-    s5 = slice40 w64
-    s6 = slice48 w64
-    s7 = slice56 w64
+    s0 , s1 , s2 , s3 , s4 , s5 , s6 , s7 :: W8
+    s0 = slice (Proxy :: Proxy 0)  w64
+    s1 = slice (Proxy :: Proxy 8)  w64
+    s2 = slice (Proxy :: Proxy 16) w64
+    s3 = slice (Proxy :: Proxy 24) w64
+    s4 = slice (Proxy :: Proxy 32) w64
+    s5 = slice (Proxy :: Proxy 40) w64
+    s6 = slice (Proxy :: Proxy 48) w64
+    s7 = slice (Proxy :: Proxy 56) w64
+
 
 -----------------------------
 -- The quarterround function from page 2 of
 -- Bernstein's "Salsa20 Specification"
 -----------------------------
+
 -- {-# INLINE quarterround #-}
-quarterround :: (W 32 , W 32 , W 32 , W 32) -> (W 32 , W 32 , W 32 , W 32)
+quarterround :: (W32 , W32 , W32 , W32) -> (W32 , W32 , W32 , W32)
 quarterround (y0 , y1 , y2 , y3) = (z0 , z1 , z2 , z3)
   where
-    z0 , z1 , z2 , z3 :: W 32
     z1 = y1 ^ rotL (lit 7) (y0 + y3)
     z2 = y2 ^ rotL (lit 9) (z1 + y0) 
     z3 = y3 ^ rotL (lit 13) (z2 + z1) 
@@ -74,16 +83,14 @@ quarterround (y0 , y1 , y2 , y3) = (z0 , z1 , z2 , z3)
 -----------------------------
 
 -- {-# INLINE rowround #-}
-rowround :: Hex (W 32) -> Hex (W 32)
+rowround :: Hex W32 -> Hex W32
 rowround (y0, y1, y2, y3, y4, y5, y6, y7, y8, y9, y10, y11, y12, y13, y14, y15)
    = (z0, z1, z2, z3, z4, z5, z6, z7, z8, z9, z10, z11, z12, z13, z14, z15)
      where
-       z0, z1, z2, z3, z4, z5, z6, z7, z8, z9, z10, z11, z12, z13, z14, z15 :: W 32
        ( z0,  z1,  z2,  z3) = quarterround ( y0,  y1,  y2,  y3)
        ( z5,  z6,  z7,  z4) = quarterround ( y5,  y6,  y7,  y4)
        (z10, z11,  z8,  z9) = quarterround (y10, y11,  y8,  y9)
        (z15, z12, z13, z14) = quarterround (y15, y12, y13, y14)
-
 
 -----------------------------
 -- The columnround function from page 4 of
@@ -91,11 +98,10 @@ rowround (y0, y1, y2, y3, y4, y5, y6, y7, y8, y9, y10, y11, y12, y13, y14, y15)
 -----------------------------
 
 -- {-# INLINE columnround #-}
-columnround :: Hex (W 32) -> Hex (W 32) 
+columnround :: Hex W32 -> Hex W32 
 columnround (x0, x1, x2, x3, x4, x5, x6, x7, x8, x9, x10, x11, x12, x13, x14, x15)
       = (y0, y1, y2, y3, y4, y5, y6, y7, y8, y9, y10, y11, y12, y13, y14, y15)
      where
-        y0, y1, y2, y3, y4, y5, y6, y7, y8, y9, y10, y11, y12, y13, y14, y15 :: W 32
         ( y0, y4, y8, y12)  = quarterround (x0, x4, x8, x12)
         ( y5, y9, y13, y1)  = quarterround (x5, x9, x13, x1)
         (y10, y14, y2, y6)  = quarterround (x10, x14, x2, x6)
@@ -107,7 +113,7 @@ columnround (x0, x1, x2, x3, x4, x5, x6, x7, x8, x9, x10, x11, x12, x13, x14, x1
 -----------------------------
 
 -- {-# INLINE doubleround #-}
-doubleround :: Hex (W 32) -> Hex (W 32)
+doubleround :: Hex W32 -> Hex W32
 doubleround = rowround . columnround
 
 -----------------------------
@@ -115,47 +121,47 @@ doubleround = rowround . columnround
 -----------------------------
 
 -- {-# INLINE revbytes #-}
-revbytes :: Quad (W 8) -> Quad (W 8)
+revbytes :: Quad W8 -> Quad W8
 revbytes (b0,b1,b2,b3) = (b3,b2,b1,b0)
 
 -- {-# INLINE littleendian #-}
-littleendian :: Quad (W 8) -> W 32
+littleendian :: Quad W8 -> W32
 littleendian = w8x4toW32 . revbytes
    where
      -- {-# INLINE w8x4toW32 #-}
-     w8x4toW32 :: Quad (W 8) -> W 32   
+     w8x4toW32 :: Quad W8 -> W32   
      w8x4toW32 (w1 , w2 , w3 , w4) = w1 ++ w2 ++ w3 ++ w4
 
 -- {-# INLINE inv_littleendian #-}
-inv_littleendian :: W 32 -> Quad (W 8)
+inv_littleendian :: W32 -> Quad W8
 inv_littleendian = revbytes . w32toW8x4
    where
-     word1 :: W 32 -> W 8
+     word1 :: W32 -> W8
      word1 w = take w
 
-     word2 :: W 32 -> W 8
+     word2 :: W32 -> W8
      word2 w = take (drop8 w)
        where
-         drop8 :: W 32 -> W 24
+         drop8 :: W32 -> W24
          drop8 = drop
 
-     word3 :: W 32 -> W 8
+     word3 :: W32 -> W8
      word3 w = take (drop16 w)
        where
-         drop16 :: W 32 -> W 16
+         drop16 :: W32 -> W16
          drop16 = drop
 
-     word4 :: W 32 -> W 8
+     word4 :: W32 -> W8
      word4 = drop
 
-     w32toW8x4 :: W 32 -> Quad (W 8)
+     w32toW8x4 :: W32 -> Quad W8
      w32toW8x4 w = (word1 w , word2 w , word3 w , word4 w)
      
 -----------------------------
 -- Salsa20 hash function from page 6-7
 -----------------------------
 
-hash_salsa20 :: X64 (W 8) -> X64 (W 8)
+hash_salsa20 :: X64 W8 -> X64 W8
 hash_salsa20 (X64  x_0  x_1  x_2  x_3  x_4  x_5  x_6  x_7  x_8  x_9 x_10 x_11 x_12 x_13 x_14 x_15
                      x_16 x_17 x_18 x_19 x_20 x_21 x_22 x_23 x_24 x_25 x_26 x_27 x_28 x_29 x_30 x_31
                      x_32 x_33 x_34 x_35 x_36 x_37 x_38 x_39 x_40 x_41 x_42 x_43 x_44 x_45 x_46 x_47
@@ -166,7 +172,7 @@ hash_salsa20 (X64  x_0  x_1  x_2  x_3  x_4  x_5  x_6  x_7  x_8  x_9 x_10 x_11 x_
                              a80 a81 a82 a83 a90 a91 a92 a93 aa0 aa1 aa2 aa3 ab0 ab1 ab2 ab3
                              ac0 ac1 ac2 ac3 ad0 ad1 ad2 ad3 ae0 ae1 ae2 ae3 af0 af1 af2 af3
    where
-     x0 , x1 , x2 , x3 , x4 , x5 , x6 , x7 , x8 , x9 , x10 , x11 , x12 , x13 , x14 , x15 :: W 32
+     x0 , x1 , x2 , x3 , x4 , x5 , x6 , x7 , x8 , x9 , x10 , x11 , x12 , x13 , x14 , x15 :: W32
      x0  = littleendian (  x_0 ,  x_1 ,  x_2 ,  x_3 )
      x1  = littleendian (  x_4 ,  x_5 ,  x_6 ,  x_7 )
      x2  = littleendian (  x_8 ,  x_9 , x_10 , x_11 )
@@ -184,22 +190,13 @@ hash_salsa20 (X64  x_0  x_1  x_2  x_3  x_4  x_5  x_6  x_7  x_8  x_9 x_10 x_11 x_
      x14 = littleendian ( x_56 , x_57 , x_58 , x_59 )
      x15 = littleendian ( x_60 , x_61 , x_62 , x_63 )
 
-     dr10 :: Hex (W 32) -> Hex (W 32)
+     dr10 :: Hex W32 -> Hex W32
      dr10 = doubleround . doubleround . doubleround . doubleround . doubleround .
               doubleround . doubleround . doubleround . doubleround . doubleround 
 
-     z0 , z1 , z2 , z3 , z4 , z5 , z6 , z7 , z8 , z9 , z10 , z11 , z12 , z13 , z14 , z15 :: W 32
+     z0 , z1 , z2 , z3 , z4 , z5 , z6 , z7 , z8 , z9 , z10 , z11 , z12 , z13 , z14 , z15 :: W32
      (z0, z1, z2, z3, z4, z5, z6, z7, z8, z9, z10, z11, z12, z13, z14, z15)
            = dr10 (x0, x1, x2, x3, x4, x5, x6, x7, x8, x9, x10, x11, x12, x13, x14, x15)
-
-     a00 , a01 , a02 , a03 , a10 , a11 , a12 , a13 :: W 8
-     a20 , a21 , a22 , a23 , a30 , a31 , a32 , a33 :: W 8
-     a40 , a41 , a42 , a43 , a50 , a51 , a52 , a53 :: W 8
-     a60 , a61 , a62 , a63 , a70 , a71 , a72 , a73 :: W 8
-     a80 , a81 , a82 , a83 , a90 , a91 , a92 , a93 :: W 8
-     aa0 , aa1 , aa2 , aa3 , ab0 , ab1 , ab2 , ab3 :: W 8
-     ac0 , ac1 , ac2 , ac3 , ad0 , ad1 , ad2 , ad3 :: W 8
-     ae0 , ae1 , ae2 , ae3 , af0 , af1 , af2 , af3 :: W 8
 
      (a00 , a01 , a02 , a03) = inv_littleendian (z0 + x0)
      (a10 , a11 , a12 , a13) = inv_littleendian (z1 + x1)
@@ -223,14 +220,14 @@ hash_salsa20 (X64  x_0  x_1  x_2  x_3  x_4  x_5  x_6  x_7  x_8  x_9 x_10 x_11 x_
 -- Salsa20 Expansion Functions (Sect 9, p8)
 -----------------------------
 
-expand :: Quad (W 8) ->
-          Quad (W 8) ->
-          Quad (W 8) ->
-          Quad (W 8) ->
-          ( Hex (W 8)   -- k0     / k   
-          , Hex (W 8)   -- n      / 
-          , Hex (W 8))  -- k1     / k
-           -> X64 (W 8)
+expand :: Quad W8 ->
+          Quad W8 ->
+          Quad W8 ->
+          Quad W8 ->
+          ( Hex W8   -- k0     / k   
+          , Hex W8   -- n      / 
+          , Hex W8)  -- k1     / k
+           -> X64 W8
 expand (x1,x2,x3,x4) (w1,w2,w3,w4) (v1,v2,v3,v4) (t1,t2,t3,t4)
        ( (y1,y2,y3,y4,y5,y6,y7,y8,y9,y10,y11,y12,y13,y14,y15,y16)
        , (z1,z2,z3,z4,z5,z6,z7,z8,z9,z10,z11,z12,z13,z14,z15,z16)
@@ -255,10 +252,10 @@ expand (x1,x2,x3,x4) (w1,w2,w3,w4) (v1,v2,v3,v4) (t1,t2,t3,t4)
         --
 
 -- | Called Salsa20_{k0,k1} in Bernstein, Section 9, page 8.
-salsa20_256 :: (Hex (W 8), Hex (W 8), Hex (W 8)) -> X64 (W 8)
+salsa20_256 :: (Hex W8, Hex W8, Hex W8) -> X64 W8
 salsa20_256 = hash_salsa20 . expand sigma0 sigma1 sigma2 sigma3
   where
-    sigma0, sigma1, sigma2, sigma3 :: Quad (W 8) 
+    sigma0, sigma1, sigma2, sigma3 :: Quad W8 
     sigma0 = (lit 101, lit 120, lit 112, lit 97)
     sigma1 = (lit 110, lit 100, lit 32, lit 51)
     sigma2 = (lit 50, lit 45, lit 98, lit 121)
@@ -269,10 +266,10 @@ salsa20_256 = hash_salsa20 . expand sigma0 sigma1 sigma2 sigma3
 -- From Iterator
 -------------------
 
-i_mod_64M :: X64 (W 8) -> StateT Sto Identity (W 8)
+i_mod_64M :: X64 W8 -> StateT Sto Identity W8
 i_mod_64M w = get >>= \ (z,_,_,_,_) -> return (ref w z)
 
-ref :: X64 (W 8) -> W 6 -> W 8
+ref :: X64 W8 -> W6 -> W8
 ref (X64 x00 x01 x02 x03 x04 x05 x06 x07 x08 x09 x0a x0b x0c x0d x0e x0f
          x10 x11 x12 x13 x14 x15 x16 x17 x18 x19 x1a x1b x1c x1d x1e x1f
          x20 x21 x22 x23 x24 x25 x26 x27 x28 x29 x2a x2b x2c x2d x2e x2f
@@ -345,37 +342,36 @@ ref (X64 x00 x01 x02 x03 x04 x05 x06 x07 x08 x09 x0a x0b x0c x0d x0e x0f
 --
 -------------------
 
-salsa20_256M :: Hex (W 8) -> StateT Sto Identity (X64 (W 8))
+salsa20_256M :: Hex W8 -> StateT Sto Identity (X64 W8)
 salsa20_256M hw8 = get >>= \ (_,_,k0,k1,_) -> return (salsa20_256 (k0 , k1 , hw8))
 
-action :: W 8 -> StateT Sto Identity (W 8)
+action :: W8 -> StateT Sto Identity W8
 action mj = factorM >>= spliceM >>= salsa20_256M >>= i_mod_64M >>= \ m -> next >>= \ _ -> return (mj ^ m)
 -- | N.b., as written ^^^^^^^^^^^ is a one-fell-swoop device, computing each output byte in each cycle
 
-spliceM :: Oct (W 8) -> StateT Sto Identity (Hex (W 8))
+spliceM :: Oct W8 -> StateT Sto Identity (Hex W8)
 spliceM m   = get >>= \ (_,_,_,_,v) -> return (splice v m)
   where
-    splice :: Oct (W 8) -> Oct (W 8) -> Hex (W 8)
+    splice :: Oct W8 -> Oct W8 -> Hex W8
     splice (b0, b1, b2, b3, b4, b5, b6, b7) (b8, b9, b10, b11, b12, b13, b14, b15)
        = (b0, b1, b2, b3, b4, b5, b6, b7, b8, b9, b10, b11, b12, b13, b14, b15) 
 
      
-devcrypt256 :: Input (Hex (W 8), Hex (W 8), Oct (W 8)) -> ReacT (Input (Hex (W 8), Hex (W 8), Oct (W 8))) (Maybe (W 8)) (StateT Sto Identity) ()
+devcrypt256 :: Input (Hex W8, Hex W8, Oct W8) -> ReacT (Input (Hex W8, Hex W8, Oct W8)) (Maybe W8) (StateT Sto Identity) ()
 devcrypt256 (Reset (k0 , k1 , v)) = (lift (reset k0 k1 v) >>= \ _ -> signal Nothing) >>= devcrypt256
 devcrypt256 (Work m)              = (lift (action m) >>= signal . Just) >>= devcrypt256
 
-start :: ReacT (Input (Hex (W 8), Hex (W 8), Oct (W 8))) (Maybe (W 8)) Identity ()
+start :: ReacT (Input (Hex W8, Hex W8, Oct W8)) (Maybe W8) Identity ()
 start = extrude (devcrypt256 (Reset (k0 , k1 , v))) sigma0
   where
     
-    k0 , k1 :: Hex (W 8)
+    k0 , k1 :: Hex W8
     k0  = ( lit 0 , lit 0 , lit 0 , lit 0 , lit 0 , lit 0 , lit 0 , lit 0
           , lit 0 , lit 0 , lit 0 , lit 0 , lit 0 , lit 0 , lit 0 , lit 0)
     k1  = ( lit 0 , lit 0 , lit 0 , lit 0 , lit 0 , lit 0 , lit 0 , lit 0
           , lit 0 , lit 0 , lit 0 , lit 0 , lit 0 , lit 0 , lit 0 , lit 0)
-    v :: Oct (W 8)
+    v :: Oct W8
     v   = (lit 0 , lit 0 , lit 0 , lit 0 , lit 0 , lit 0 , lit 0 , lit 0)
 
     sigma0 :: Sto
     sigma0 = (lit 0 , lit 0 , k0 , k1 , v)
-

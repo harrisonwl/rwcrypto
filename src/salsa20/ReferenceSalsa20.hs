@@ -1,15 +1,15 @@
 module ReferenceSalsa20 where
--- import ReWire
--- import ReWire.Bits 
+import ReWire
+import ReWire.Bits 
 -- import ReWire.Verilog
 
 import qualified Prelude as P -- (Integer , Int , (^)) -- hiding ((^) , (+))
-import BinaryArithmetic
-import W8
-import W32
+-- import BinaryArithmetic
+-- import W8
+-- import W32
 
 -- import Iterator()
--- import Idioms
+import Idioms
 
 type Integer = P.Integer
 type Int     = P.Int

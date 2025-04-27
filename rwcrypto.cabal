@@ -31,6 +31,8 @@ library
       TwoBlockMessage
       ColumnRound
       DoubleRound
+      Encrypt
+      Expansion
       HashSalsa20
       Idioms
       Iterator

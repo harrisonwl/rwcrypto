@@ -25,13 +25,25 @@ littleendian w8x4 = b3 ++ b2 ++ b1 ++ b0
 ------------------------------
 
 inv_littleendian :: W 32 -> Quad (W 8)
-inv_littleendian w32 = revbytes (s0 , s1 , s2 , s3)
+inv_littleendian w = revbytes (slice0 w , slice1 w , slice2 w , slice3 w)
+
+slice0 :: W 32 -> W 8
+slice0 w32 = slice (Proxy :: Proxy 0)  w32
+
+slice1 :: W 32 -> W 8
+slice1 w32 = slice (Proxy :: Proxy 8)  w32
+
+slice2 :: W 32 -> W 8
+slice2 w32 = slice (Proxy :: Proxy 16)  w32
+
+slice3 :: W 32 -> W 8
+slice3 w32 = slice (Proxy :: Proxy 24)  w32
+
+slicetest :: P.Bool
+slicetest = (slice0 x , slice1 x , slice2 x , slice3 x) P.== (lit 0xde , lit 0xad , lit 0xbe , lit 0xef)
   where
-    s0 , s1 , s2 , s3 :: W 8
-    s0 = slice (Proxy :: Proxy 0)  w32
-    s1 = slice (Proxy :: Proxy 8)  w32
-    s2 = slice (Proxy :: Proxy 16) w32
-    s3 = slice (Proxy :: Proxy 24) w32
+    x :: W 32
+    x = lit 0xdeadbeef
 
 alltests :: [P.Bool]
 alltests = [test1 , test2 , test3] P.++ invertible_tests
