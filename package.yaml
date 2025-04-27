@@ -45,7 +45,7 @@ ghc-options:
 library:
   source-dirs:
     - src
-    - src/sha256
+#    - src/sha256
     - src/salsa20
 #    - external/BinaryArithmetic/src
 

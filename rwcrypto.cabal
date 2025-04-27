@@ -25,7 +25,6 @@ source-repository head
 
 library
   exposed-modules:
-      Lib
       ExecSHA256
       ReferenceSHA256
       TwoBlockMessage
@@ -35,21 +34,9 @@ library
       Expansion
       HashSalsa20
       Idioms
-      Iterator
       LittleEndian
-      MNWExample
       QuarterRound
-      ReferenceSalsa20
       RowRound
-      RW_Salsa20
-      Salsa20Reference
-      Test_ReferenceSalsa20
-      TestRefSalsa20
-      BinaryArithmetic
-      W32
-      W6
-      W64
-      W8
   other-modules:
       Paths_rwcrypto
   autogen-modules:
@@ -58,7 +45,6 @@ library
       src
       src/sha256
       src/salsa20
-      external/BinaryArithmetic/src
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints
   build-depends:
       base ==4.20.*
