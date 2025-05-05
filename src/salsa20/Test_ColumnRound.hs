@@ -1,9 +1,8 @@
 {-# LANGUAGE DataKinds #-}
-module ColumnRound (columnround , alltests) where
+module Test_ColumnRound (alltests) where
 
-import ReWire
-import Idioms (X16(..), Hex, x16)
-import QuarterRound(quarterround)
+import Basic()
+import Testing
 import ColumnRound(columnround)
 
 -----------------------------

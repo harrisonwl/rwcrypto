@@ -1,5 +1,5 @@
 {-# LANGUAGE DataKinds #-}
-module Encrypt (factor64 , splice , mod64) where
+module Test_Encrypt (alltests) where
 
 import Prelude hiding ((^) , (++))
 import ReWire 

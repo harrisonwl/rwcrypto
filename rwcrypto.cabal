@@ -25,25 +25,32 @@ source-repository head
 
 library
   exposed-modules:
-      ExecSHA256
-      ReferenceSHA256
-      TwoBlockMessage
+      Basic
       ColumnRound
       DoubleRound
       Encrypt
+      Exec_Salsa20Encrypt
       Expansion
       HashSalsa20
       Idioms
       LittleEndian
       QuarterRound
       RowRound
+      RW_Salsa20Encrypt
+      Test_ColumnRound
+      Test_DoubleRound
+      Test_Encrypt
+      Test_Expansion
+      Test_HashSalsa20
+      Test_LittleEndian
+      Test_QuarterRound
+      Test_RowRound
   other-modules:
       Paths_rwcrypto
   autogen-modules:
       Paths_rwcrypto
   hs-source-dirs:
       src
-      src/sha256
       src/salsa20
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints
   build-depends:

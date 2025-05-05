@@ -1,19 +1,10 @@
 {-# LANGUAGE DataKinds #-}
-module DoubleRound (doubleround , alltests) where
+module Test_DoubleRound (doubleround , alltests) where
 
 import ReWire
--- import ReWire.Bits hiding ((==))
-import Idioms ({- X16(..), -} x16, Hex)
-import RowRound(rowround)
-import ColumnRound(columnround)
-
------------------------------
--- The doubleround function from page 5 of
--- Bernstein's "Salsa20 Specification"
------------------------------
-
-doubleround :: Hex (W 32) -> Hex (W 32)
-doubleround = rowround . columnround
+import Basic
+import Testing
+import DoubleRound(doubleround)
 
 alltests :: [Bool]
 alltests = [test1 , test2]

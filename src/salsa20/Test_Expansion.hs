@@ -3,7 +3,8 @@ module Test_Expansion where
 
 import ReWire 
 import ReWire.Bits (lit)
-import Idioms (Quad, Hex, X16(..), X64(..), x64, x16)
+import Basic (Quad, Hex, X16(..), X64(..))
+import Testing (x64, x16)
 import Expansion (salsa20_k0k1, salsa20_k, expandk0k1, expandk)
 -- import HashSalsa20 (hash_salsa20)
 

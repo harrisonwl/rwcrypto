@@ -1,73 +1,11 @@
 {-# LANGUAGE DataKinds #-}
-module HashSalsa20(hash_salsa20 , alltests) where
+{-# OPTIONS_GHC -fno-warn-orphans #-}
+module Test_HashSalsa20(alltests) where
 
-import Prelude ((.) , (==) , Bool, Integer , (-) , (<=))
 import ReWire
-import ReWire.Bits (lit, (+))
-
-import Idioms (Hex, X16(..), X64(..), x64)
-import DoubleRound (doubleround)
-import LittleEndian (littleendian,inv_littleendian)
-
------------------------------
--- Salsa20 hash function from page 6-7
------------------------------
-
-hash_salsa20 :: X64 (W 8) -> X64 (W 8)
-hash_salsa20 (X64   x_0  x_1  x_2  x_3  x_4  x_5  x_6  x_7  x_8  x_9 x_10 x_11 x_12 x_13 x_14 x_15
-                   x_16 x_17 x_18 x_19 x_20 x_21 x_22 x_23 x_24 x_25 x_26 x_27 x_28 x_29 x_30 x_31
-                   x_32 x_33 x_34 x_35 x_36 x_37 x_38 x_39 x_40 x_41 x_42 x_43 x_44 x_45 x_46 x_47
-                   x_48 x_49 x_50 x_51 x_52 x_53 x_54 x_55 x_56 x_57 x_58 x_59 x_60 x_61 x_62 x_63 )
-                        = X64
-                             a00 a01 a02 a03 a10 a11 a12 a13 a20 a21 a22 a23 a30 a31 a32 a33
-                             a40 a41 a42 a43 a50 a51 a52 a53 a60 a61 a62 a63 a70 a71 a72 a73
-                             a80 a81 a82 a83 a90 a91 a92 a93 aa0 aa1 aa2 aa3 ab0 ab1 ab2 ab3
-                             ac0 ac1 ac2 ac3 ad0 ad1 ad2 ad3 ae0 ae1 ae2 ae3 af0 af1 af2 af3
-   where
-     x0 , x1 , x2 , x3 , x4 , x5 , x6 , x7 , x8 , x9 , x10 , x11 , x12 , x13 , x14 , x15 :: W 32
-     x0  = littleendian (  x_0 ,  x_1 ,  x_2 ,  x_3 )
-     x1  = littleendian (  x_4 ,  x_5 ,  x_6 ,  x_7 )
-     x2  = littleendian (  x_8 ,  x_9 , x_10 , x_11 )
-     x3  = littleendian ( x_12 , x_13 , x_14 , x_15 )
-     x4  = littleendian ( x_16 , x_17 , x_18 , x_19 )
-     x5  = littleendian ( x_20 , x_21 , x_22 , x_23 )
-     x6  = littleendian ( x_24 , x_25 , x_26 , x_27 )
-     x7  = littleendian ( x_28 , x_29 , x_30 , x_31 )
-     x8  = littleendian ( x_32 , x_33 , x_34 , x_35 )
-     x9  = littleendian ( x_36 , x_37 , x_38 , x_39 )
-     x10 = littleendian ( x_40 , x_41 , x_42 , x_43 )
-     x11 = littleendian ( x_44 , x_45 , x_46 , x_47 )
-     x12 = littleendian ( x_48 , x_49 , x_50 , x_51 )
-     x13 = littleendian ( x_52 , x_53 , x_54 , x_55 )
-     x14 = littleendian ( x_56 , x_57 , x_58 , x_59 )
-     x15 = littleendian ( x_60 , x_61 , x_62 , x_63 )
-
-     dr10 :: Hex (W 32) -> Hex (W 32)
-     dr10 = doubleround . doubleround . doubleround . doubleround . doubleround .
-              doubleround . doubleround . doubleround . doubleround . doubleround 
-
-     z0 , z1 , z2 , z3 , z4 , z5 , z6 , z7 , z8 , z9 , z10 , z11 , z12 , z13 , z14 , z15 :: W 32
-     (X16 z0 z1 z2 z3 z4 z5 z6 z7 z8 z9 z10 z11 z12 z13 z14 z15)
-           = dr10 (X16 x0 x1 x2 x3 x4 x5 x6 x7 x8 x9 x10 x11 x12 x13 x14 x15)
-
-     (a00 , a01 , a02 , a03) = inv_littleendian (z0 + x0)
-     (a10 , a11 , a12 , a13) = inv_littleendian (z1 + x1)
-     (a20 , a21 , a22 , a23) = inv_littleendian (z2 + x2)
-     (a30 , a31 , a32 , a33) = inv_littleendian (z3 + x3)
-     (a40 , a41 , a42 , a43) = inv_littleendian (z4 + x4)
-     (a50 , a51 , a52 , a53) = inv_littleendian (z5 + x5)
-     (a60 , a61 , a62 , a63) = inv_littleendian (z6 + x6)
-     (a70 , a71 , a72 , a73) = inv_littleendian (z7 + x7)
-
-     (a80 , a81 , a82 , a83) = inv_littleendian (z8 + x8)
-     (a90 , a91 , a92 , a93) = inv_littleendian (z9 + x9)
-     (aa0 , aa1 , aa2 , aa3) = inv_littleendian (z10 + x10)
-     (ab0 , ab1 , ab2 , ab3) = inv_littleendian (z11 + x11)
-     (ac0 , ac1 , ac2 , ac3) = inv_littleendian (z12 + x12)
-     (ad0 , ad1 , ad2 , ad3) = inv_littleendian (z13 + x13)
-     (ae0 , ae1 , ae2 , ae3) = inv_littleendian (z14 + x14)
-     (af0 , af1 , af2 , af3) = inv_littleendian (z15 + x15)
-
+import Basic (X64(..))
+import Testing (x64)
+import HashSalsa20 (hash_salsa20)
 
 alltests :: [Bool]
 alltests = [ test1 , test2 , test3 {- , test4 -} ]
@@ -152,3 +90,29 @@ iter i f a = if i <= 0 then a else iter (i Prelude.- 1) f (f a)
 test4 :: Bool
 test4 = iter 1000000 hash_salsa20 i4 == o4
 -}
+
+instance Eq a => Eq (X64 a) where
+  (X64 a00 a01 a02 a03 a10 a11 a12 a13 a20 a21 a22 a23 a30 a31 a32 a33
+       a40 a41 a42 a43 a50 a51 a52 a53 a60 a61 a62 a63 a70 a71 a72 a73
+       a80 a81 a82 a83 a90 a91 a92 a93 aa0 aa1 aa2 aa3 ab0 ab1 ab2 ab3
+       ac0 ac1 ac2 ac3 ad0 ad1 ad2 ad3 ae0 ae1 ae2 ae3 af0 af1 af2 af3 ) ==
+        (X64 b00 b01 b02 b03 b10 b11 b12 b13 b20 b21 b22 b23 b30 b31 b32 b33
+             b40 b41 b42 b43 b50 b51 b52 b53 b60 b61 b62 b63 b70 b71 b72 b73
+             b80 b81 b82 b83 b90 b91 b92 b93 ba0 ba1 ba2 ba3 bb0 bb1 bb2 bb3
+             bc0 bc1 bc2 bc3 bd0 bd1 bd2 bd3 be0 be1 be2 be3 bf0 bf1 bf2 bf3 )
+        = a00 == b00 && a01 == b01 && a02 == b02 && a03 == b03 &&
+          a10 == b10 && a11 == b11 && a12 == b12 && a13 == b13 &&
+          a20 == b20 && a21 == b21 && a22 == b22 && a23 == b23 &&
+          a30 == b30 && a31 == b31 && a32 == b32 && a33 == b33 &&
+          a40 == b40 && a41 == b41 && a42 == b42 && a43 == b43 &&
+          a50 == b50 && a51 == b51 && a52 == b52 && a53 == b53 &&
+          a60 == b60 && a61 == b61 && a62 == b62 && a63 == b63 &&
+          a70 == b70 && a71 == b71 && a72 == b72 && a73 == b73 &&
+          a80 == b80 && a81 == b81 && a82 == b82 && a83 == b83 &&
+          a90 == b90 && a91 == b91 && a92 == b92 && a93 == b93 &&
+          aa0 == ba0 && aa1 == ba1 && aa2 == ba2 && aa3 == ba3 &&
+          ab0 == bb0 && ab1 == bb1 && ab2 == bb2 && ab3 == bb3 &&
+          ac0 == bc0 && ac1 == bc1 && ac2 == bc2 && ac3 == bc3 &&
+          ad0 == bd0 && ad1 == bd1 && ad2 == bd2 && ad3 == bd3 &&
+          ae0 == be0 && ae1 == be1 && ae2 == be2 && ae3 == be3 &&
+          af0 == bf0 && af1 == bf1 && af2 == bf2 && af3 == bf3
