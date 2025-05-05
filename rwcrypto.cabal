@@ -25,15 +25,26 @@ source-repository head
 
 library
   exposed-modules:
+      Basic
       ColumnRound
       DoubleRound
       Encrypt
+      Exec_Salsa20Encrypt
       Expansion
       HashSalsa20
       Idioms
       LittleEndian
       QuarterRound
       RowRound
+      RW_Salsa20Encrypt
+      Test_ColumnRound
+      Test_DoubleRound
+      Test_Encrypt
+      Test_Expansion
+      Test_HashSalsa20
+      Test_LittleEndian
+      Test_QuarterRound
+      Test_RowRound
   other-modules:
       Paths_rwcrypto
   autogen-modules:

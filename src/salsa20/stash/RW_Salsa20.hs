@@ -1,5 +1,5 @@
 {-# LANGUAGE DataKinds #-}
-module RW_Salsa20 where
+-- module RW_Salsa20 where
 
 -- |
 -- | This is a refactoring of the reference semantics
@@ -136,24 +136,29 @@ littleendian = w8x4toW32 . revbytes
 inv_littleendian :: W32 -> Quad W8
 inv_littleendian = revbytes . w32toW8x4
    where
+     {-# INLINE word1 #-}
      word1 :: W32 -> W8
      word1 w = take w
 
+     {-# INLINE word2 #-}
      word2 :: W32 -> W8
      word2 w = take (drop8 w)
        where
          drop8 :: W32 -> W24
          drop8 = drop
 
+     {-# INLINE word3 #-}
      word3 :: W32 -> W8
      word3 w = take (drop16 w)
        where
          drop16 :: W32 -> W16
          drop16 = drop
 
+     {-# INLINE word4 #-}
      word4 :: W32 -> W8
      word4 = drop
 
+     {-# INLINE word #-}
      w32toW8x4 :: W32 -> Quad W8
      w32toW8x4 w = (word1 w , word2 w , word3 w , word4 w)
      
