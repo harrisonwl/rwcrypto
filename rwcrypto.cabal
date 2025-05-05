@@ -25,9 +25,6 @@ source-repository head
 
 library
   exposed-modules:
-      ExecSHA256
-      ReferenceSHA256
-      TwoBlockMessage
       ColumnRound
       DoubleRound
       Encrypt
@@ -43,7 +40,6 @@ library
       Paths_rwcrypto
   hs-source-dirs:
       src
-      src/sha256
       src/salsa20
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints
   build-depends:
