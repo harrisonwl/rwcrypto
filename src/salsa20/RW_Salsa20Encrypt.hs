@@ -7,7 +7,7 @@ import Prelude hiding ((^) , (+))
 import ReWire 
 import ReWire.Bits ( lit , (^) , (+) )
 import Basic (Oct, Hex, pi64 , X16(..) )
--- import Encrypt( encrypt )
+import Encrypt( encrypt )
 
 -- |
 -- | This is for the Salsa20_k0k1 expansion function.
@@ -61,7 +61,6 @@ data O = Ack                -- Nothing to output
 
 type Dev = ReacT I O S 
 
-{-
 {-# INLINE encryptM #-}
 encryptM :: W 8 -> S (W 8)
 encryptM mi = do
@@ -70,7 +69,6 @@ encryptM mi = do
                        --(mi ^ ((salsa20_k0k1 (k0 , k1) (splice v (factor64 i))) `pi64` (mod64 i)))
                  putctr (i + lit 1)
                  return mi'
--}
 
 {-# INLINE action #-}
 action :: I -> Dev I
@@ -83,10 +81,9 @@ action (K1 k1)   = do
 action (Nonce v) = do
                       lift (putv v)
                       signal Ack
-action (Go mi)   = signal Ack
-  -- do
---                      mi' <- lift $ encryptM mi
---                      signal (Out mi')
+action (Go mi)   = do
+                      mi' <- lift $ encryptM mi
+                      signal (Out mi')
   
 action Reset     = do
                       lift $ putctr (lit 0)
