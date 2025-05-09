@@ -66,7 +66,6 @@ encryptM :: W 8 -> S (W 8)
 encryptM mi = do
                  (k0 , k1 , v , i) <- get
                  let mi' = encrypt k0 k1 v i mi
-                       --(mi ^ ((salsa20_k0k1 (k0 , k1) (splice v (factor64 i))) `pi64` (mod64 i)))
                  putctr (i + lit 1)
                  return mi'
 
@@ -89,17 +88,6 @@ action Reset     = do
                       lift $ putctr (lit 0)
                       signal Ack
 action Idle      = signal Ack                      
-
--- loop :: I -> ReacT I O (StateT RegFile Identity) ()
--- loop (K0 k0)   = do
---                     lift (putk0 k0)
---                     i <- signal Ack
---                     loop i
--- loop (K1 k1)   = do
---                     lift (putk1 k1)
---                     i <- signal Ack
---                     loop i
--- loop _         = signal Ack                    
 
 loop :: I -> ReacT I O (StateT RegFile Identity) ()
 loop inp = action inp >>= loop

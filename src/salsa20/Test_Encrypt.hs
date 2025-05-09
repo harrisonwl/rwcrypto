@@ -8,26 +8,28 @@ import ReWire.Vectors (slice , (++))
 import ReWire.Finite(finite)
 import qualified ReWire.FiniteComp as FC
 
-import Idioms (Quad, Oct, Hex, X16(..), X64(..), pi64, proj64)
+import Basic (Quad, Oct, Hex, X16(..), X64(..))
 import Expansion(salsa20_k0k1)
-
+import Encrypt (encrypt)
 import qualified ReWire.Interactive as RI
 import GHC.Integer (Integer)
+import Data.String (String)
+import Data.Bool (Bool)
 
 encode64 :: Hex (W 8) -> Hex (W 8) -> Oct (W 8) -> W 64 -> [W 8] ->  [W 8]
 encode64 k0 k1 v _ []        = []
-encode64 k0 k1 v i (mi : ms) = (mi ^ ((salsa20_k0k1 (k0 , k1) (splice v (factor64 i))) `pi64` (mod64 i))) : encode64 k0 k1 v (i ReWire.Bits.+ lit 1) ms
+encode64 k0 k1 v i (mi : ms) = encrypt k0 k1 v i mi : encode64 k0 k1 v (i ReWire.Bits.+ lit 1) ms
 
-encrypt64 :: String -> [W 8]
-encrypt64 plaintext = encode64 k0 k1 v (lit 0) m
+encrypt64 :: String -> String
+encrypt64 text = map w8ToChar (encode64 k0 k1 v (lit 0) m)
   where
      m :: [W 8]
-     m        = Prelude.map charToW8 plaintext
+     m        = Prelude.map charToW8 text
      (k0, k1) = mkk0k1 secret
      v        = mknonce nonce
 
-thereandback64 :: String -> String
-thereandback64 plaintext = map w8ToChar (encrypt64 (map w8ToChar (encrypt64 plaintext)))
+thereandback :: String -> String
+thereandback = encrypt64 . encrypt64
   
 splice :: Oct a -> Oct a -> Hex a
 splice (b0, b1, b2, b3, b4, b5, b6, b7) (b8, b9, b10, b11, b12, b13, b14, b15)
@@ -54,10 +56,31 @@ w8ToChar :: W 8 -> Char
 w8ToChar = toEnum . fromInteger . ReWire.Bits.toInteger
 
 secret    = "*Thirty-two byte (256 bits) key*"
-plaintext = "Attack at dawn"
 nonce     = "12345678"
 
+ex1 , ex2 , ex3 :: String
+ex1 = thereandback plaintext
+ex2 = thereandback godzilla_haiku
+ex3 = thereandback sonnet129
 
+test1 , test2 , test3 :: Bool
+test1 = thereandback plaintext      == plaintext
+test2 = thereandback godzilla_haiku == godzilla_haiku
+test3 = thereandback sonnet129      == sonnet129
+
+alltests :: [Bool]
+alltests = [test1 , test2 , test3]
+
+plaintext :: String
+plaintext = "Attack at dawn"
+
+godzilla_haiku :: String
+godzilla_haiku = "With artillery\nYou greet your nuclear child\nAm I the monster?"
+
+sonnet129 :: String
+sonnet129 = "Th' expense of spirit in a waste of shame\nIs lust in action; and till action, lust\nIs perjured, murd'rous, bloody, full of blame,\nSavage, extreme, rude, cruel, not to trust,\nEnjoyed no sooner but despised straight, \nPast reason hunted; and, no sooner had \nPast reason hated as a swallowed bait \nOn purpose laid to make the taker mad; \nMad in pursuit and in possession so, \nHad, having, and in quest to have, extreme; \nA bliss in proof and proved, a very woe; \nBefore, a joy proposed; behind, a dream. \n  All this the world well knows; yet none knows well \n  To shun the heaven that leads men to this hell."
+
+{-
 -- |
 -- | This is factor function tweeked so that it takes (W 64) as input instead of Integer. 
 -- |
@@ -79,6 +102,7 @@ mod64 w64 = s0
   where
     s0 :: W 6
     s0 = slice (Proxy :: Proxy 58)  w64
+-}
 
 -- |
 -- | *************************************************
