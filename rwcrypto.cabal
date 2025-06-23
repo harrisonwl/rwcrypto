@@ -27,13 +27,18 @@ library
   exposed-modules:
       Basic
       ColumnRound
+      DblPipe3
+      DblX1
+      DblX3
       DoubleRound
       Encrypt
       Exec_Salsa20Encrypt
       Expansion
       HashSalsa20
-      Idioms
       LittleEndian
+      OneTwoThree
+      Pipe123
+      Pipelined10xSalsa20
       QuarterRound
       RowRound
       RW_Salsa20Encrypt
@@ -45,6 +50,7 @@ library
       Test_LittleEndian
       Test_QuarterRound
       Test_RowRound
+      Testing
   other-modules:
       Paths_rwcrypto
   autogen-modules:

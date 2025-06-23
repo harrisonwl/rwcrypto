@@ -1,5 +1,5 @@
 {-# LANGUAGE DataKinds #-}
--- module RW_Salsa20Encrypt (start) where
+--module RW_Salsa20Encrypt (start) where
 
 -- | This is intended to be compilable with rwc.
 

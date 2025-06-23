@@ -1,5 +1,5 @@
 {-# LANGUAGE DataKinds #-}
-module LittleEndian(littleendian , inv_littleendian) where
+module LittleEndian(littleendian , inv_littleendian , littleendian') where
 
 import Prelude hiding ((++))
 import ReWire
@@ -13,6 +13,9 @@ import Basic (Quad)
 
 revbytes :: Quad (W 8) -> Quad (W 8)   -- i.e., (W 8,W 8,W 8,W 8) -> (W 8,W 8,W 8,W 8)
 revbytes (b0,b1,b2,b3) = (b3,b2,b1,b0)
+
+littleendian' :: W 32 -> W 32     -- i.e., (W 8, W 8, W 8, W 8) -> W 32
+littleendian' w = slice3 w ++ slice2 w ++ slice1 w ++ slice0 w
 
 littleendian :: Quad (W 8) -> W 32     -- i.e., (W 8, W 8, W 8, W 8) -> W 32
 littleendian w8x4 = b3 ++ b2 ++ b1 ++ b0
