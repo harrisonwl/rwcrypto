@@ -1,16 +1,121 @@
 {-# LANGUAGE DataKinds #-}
-module HashSalsa20(hash_salsa20) where
+module HashSalsa20(hash_salsa20,hash) where
 
-import Prelude hiding ((+)) 
+import Prelude hiding ((+) , (<>)) 
 import ReWire
 import ReWire.Bits ((+))
 import Basic (Hex, X16(..), X64(..))
 import DoubleRound (doubleround)
-import LittleEndian (littleendian,inv_littleendian)
+import LittleEndian (littleendian,inv_littleendian,littleendian')
 
 -----------------------------
 -- Salsa20 hash function from page 6-7
 -----------------------------
+
+-- hash :: Hex (W 32) -> Hex (W 32)
+-- hash (X16 w0 w1 w2 w3 w4 w5 w6 w7 w8 w9 w10 w11 w12 w13 w14 w15)
+--                       = X16 a0 a1 a2 a3 a4 a5 a6 a7 a8 a9 aa ab ac ad ae af
+--    where
+--      v0 , v1 , v2 , v3 , v4 , v5 , v6 , v7 , v8 , v9 , v10 , v11 , v12 , v13 , v14 , v15 :: W 32
+--      v0  = littleendian' w0
+--      v1  = littleendian' w1
+--      v2  = littleendian' w2
+--      v3  = littleendian' w3
+--      v4  = littleendian' w4
+--      v5  = littleendian' w5
+--      v6  = littleendian' w6
+--      v7  = littleendian' w7
+--      v8  = littleendian' w8
+--      v9  = littleendian' w9
+--      v10 = littleendian' w10
+--      v11 = littleendian' w11
+--      v12 = littleendian' w12
+--      v13 = littleendian' w13
+--      v14 = littleendian' w14
+--      v15 = littleendian' w15
+     
+--      dr10 :: Hex (W 32) -> Hex (W 32)
+--      dr10 = doubleround . doubleround . doubleround . doubleround . doubleround .
+--               doubleround . doubleround . doubleround . doubleround . doubleround 
+
+--      z0 , z1 , z2 , z3 , z4 , z5 , z6 , z7 , z8 , z9 , z10 , z11 , z12 , z13 , z14 , z15 :: W 32
+--      (X16 z0 z1 z2 z3 z4 z5 z6 z7 z8 z9 z10 z11 z12 z13 z14 z15)
+--            = dr10 (X16 v0 v1 v2 v3 v4 v5 v6 v7 v8 v9 v10 v11 v12 v13 v14 v15)
+
+--      a0 = littleendian' (z0 + v0)
+--      a1 = littleendian' (z1 + v1)
+--      a2 = littleendian' (z2 + v2)
+--      a3 = littleendian' (z3 + v3)
+--      a4 = littleendian' (z4 + v4)
+--      a5 = littleendian' (z5 + v5)
+--      a6 = littleendian' (z6 + v6)
+--      a7 = littleendian' (z7 + v7)
+
+--      a8 = littleendian' (z8 + v8)
+--      a9 = littleendian' (z9 + v9)
+--      aa = littleendian' (z10 + v10)
+--      ab = littleendian' (z11 + v11)
+--      ac = littleendian' (z12 + v12)
+--      ad = littleendian' (z13 + v13)
+--      ae = littleendian' (z14 + v14)
+--      af = littleendian' (z15 + v15)
+
+h :: Hex (W 32) -> Hex (W 32)
+h w = (lendian . \ z -> plus z (lendian w)) . doubleround . doubleround . doubleround . doubleround . doubleround . doubleround . doubleround . doubleround . doubleround . doubleround . lendian $ w
+
+(<>) :: Monad m => (a -> m b) -> (b -> m c) -> a -> m c
+f <> g = \ a -> f a >>= g
+
+step :: Monad m => (a -> b) -> a -> m b
+step f = return . f
+
+hm :: Monad m => Hex (W 32) -> m (Hex (W 32))
+hm = step doubleround <> step doubleround <> step doubleround <> step doubleround <>
+     step doubleround <> step doubleround <> step doubleround <> step doubleround <>
+     step doubleround <> step doubleround
+
+--
+-- This is a compositional form of hash_salsa20
+--
+hash :: Hex (W 32) -> Hex (W 32)
+hash w = let
+               v = lendian w
+           in
+              -- | 11 functions composed:
+              (lendian . \ z -> plus z v) . doubleround . doubleround . doubleround . doubleround . doubleround . doubleround . doubleround . doubleround . doubleround . doubleround $ v
+
+
+
+lendian :: Hex (W 32) -> Hex (W 32)
+lendian (X16 w0 w1 w2 w3 w4 w5 w6 w7 w8 w9 w10 w11 w12 w13 w14 w15)
+                     = X16 v0 v1 v2 v3 v4 v5 v6 v7 v8 v9 v10 v11 v12 v13 v14 v15
+        where
+          v0 , v1 , v2 , v3 , v4 , v5 , v6 , v7 , v8 , v9 , v10 , v11 , v12 , v13 , v14 , v15 :: W 32
+          v0  = littleendian' w0
+          v1  = littleendian' w1
+          v2  = littleendian' w2
+          v3  = littleendian' w3
+          v4  = littleendian' w4
+          v5  = littleendian' w5
+          v6  = littleendian' w6
+          v7  = littleendian' w7
+          v8  = littleendian' w8
+          v9  = littleendian' w9
+          v10 = littleendian' w10
+          v11 = littleendian' w11
+          v12 = littleendian' w12
+          v13 = littleendian' w13
+          v14 = littleendian' w14
+          v15 = littleendian' w15
+
+plus :: Hex (W 32) -> Hex (W 32) -> Hex (W 32)
+plus (X16 a0 a1 a2 a3 a4 a5 a6 a7 a8 a9 a10 a11 a12 a13 a14 a15)
+         (X16 b0 b1 b2 b3 b4 b5 b6 b7 b8 b9 b10 b11 b12 b13 b14 b15)
+            = X16 (a0 + b0) (a1 + b1) (a2 + b2) (a3 + b3)
+                  (a4 + b4) (a5 + b5) (a6 + b6) (a7 + b7)
+                  (a8 + b8) (a9 + b9) (a10 + b10) (a11 + b11)
+                  (a12 + b12) (a13 + b13) (a14 + b14) (a15 + b15)
+
 
 hash_salsa20 :: X64 (W 8) -> X64 (W 8)
 hash_salsa20 (X64   x_0  x_1  x_2  x_3  x_4  x_5  x_6  x_7  x_8  x_9 x_10 x_11 x_12 x_13 x_14 x_15
