@@ -32,7 +32,6 @@ library
       Exec_Salsa20Encrypt
       Expansion
       HashSalsa20
-      Idioms
       LittleEndian
       QuarterRound
       RowRound
@@ -45,6 +44,7 @@ library
       Test_LittleEndian
       Test_QuarterRound
       Test_RowRound
+      Testing
   other-modules:
       Paths_rwcrypto
   autogen-modules:
