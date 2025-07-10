@@ -32,7 +32,6 @@ library
       DblX3
       DoubleRound
       Encrypt
-      Exec_Salsa20Encrypt
       Expansion
       HashSalsa20
       LittleEndian
@@ -51,6 +50,16 @@ library
       Test_QuarterRound
       Test_RowRound
       Testing
+      AddRoundKey
+      AESBasic
+      AESMixColumns
+      AESTesting
+      KeyExpansion
+      MixColumns
+      Reference_AES
+      RotWord
+      ShiftRows
+      SubBytes
   other-modules:
       Paths_rwcrypto
   autogen-modules:
@@ -58,6 +67,7 @@ library
   hs-source-dirs:
       src
       src/salsa20
+      src/aes
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints
   build-depends:
       base ==4.20.*
