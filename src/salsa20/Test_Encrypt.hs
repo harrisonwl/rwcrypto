@@ -1,13 +1,14 @@
 {-# LANGUAGE DataKinds #-}
-module Test_Encrypt (alltests) where
+module Test_Encrypt (alltests , mknonce , mkk0k1 , w8ToChar , charToW8) where
 
+import Prelude hiding ((+))
 import ReWire
 import ReWire.Bits (lit,toInteger,(+))
 import Basic (Oct, Hex, X16(..))
 import Encrypt (encrypt,encrypt')
 
-encryptS20 :: String -> String
-encryptS20 text = map w8ToChar (encode64 k0 k1 v (lit 0) m)
+encryptS2O :: String -> String
+encryptS2O text = map w8ToChar (encode64 k0 k1 v (lit 0) m)
   where
      m :: [W 8]
      m        = map charToW8 text
@@ -20,10 +21,10 @@ encryptS20 text = map w8ToChar (encode64 k0 k1 v (lit 0) m)
 
      encode64 :: Hex (W 8) -> Hex (W 8) -> Oct (W 8) -> W 64 -> [W 8] ->  [W 8]
      encode64 _ _ _ _ []          = []
-     encode64 k0 k1 v i (mi : ms) = encrypt' k0 k1 v i mi : encode64 k0 k1 v (i ReWire.Bits.+ lit 1) ms
+     encode64 k0 k1 v i (mi : ms) = encrypt k0 k1 v i mi : encode64 k0 k1 v (i + lit 1) ms
 
 thereandback :: String -> String
-thereandback = encryptS20 . encryptS20
+thereandback = encryptS2O . encryptS2O
 
 mkk0k1 :: String -> (Hex (W 8) , Hex (W 8))
 mkk0k1 secret = ( (X16 b31 b30 b29 b28 b27 b26 b25 b24 b23 b22 b21 b20 b19 b18 b17 b16)

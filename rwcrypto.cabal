@@ -36,7 +36,6 @@ library
       HashSalsa20
       LittleEndian
       OneTwoThree
-      Pipe123
       Pipelined10xSalsa20
       QuarterRound
       RowRound

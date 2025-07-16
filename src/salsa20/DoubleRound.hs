@@ -11,5 +11,6 @@ import ColumnRound(columnround)
 -- Bernstein's "Salsa20 Specification"
 -----------------------------
 
+{-# INLINE doubleround #-}
 doubleround :: Hex (W 32) -> Hex (W 32)
 doubleround = rowround . columnround
