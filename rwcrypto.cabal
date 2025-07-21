@@ -32,6 +32,7 @@ library
       DblX3
       DoubleRound
       Encrypt
+      Exec_Salsa20Encrypt
       Expansion
       HashSalsa20
       LittleEndian
@@ -39,6 +40,8 @@ library
       Pipelined10xSalsa20
       QuarterRound
       RowRound
+      RW_DoublePipe2
+      RW_PipedDouble
       RW_Salsa20Encrypt
       Test_ColumnRound
       Test_DoubleRound
@@ -53,12 +56,19 @@ library
       AESBasic
       AESMixColumns
       AESTesting
+      Cipher
       KeyExpansion
       MixColumns
       Reference_AES
       RotWord
       ShiftRows
       SubBytes
+      CSA
+      Fubar
+      Pipe123
+      Pipe3
+      Pipelining
+      RW_Pipe123
   other-modules:
       Paths_rwcrypto
   autogen-modules:
@@ -67,6 +77,7 @@ library
       src
       src/salsa20
       src/aes
+      src/pipelining
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints
   build-depends:
       base ==4.20.*
