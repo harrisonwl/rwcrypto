@@ -1,5 +1,5 @@
 {-# LANGUAGE DataKinds #-}
--- module DblPipe3 where
+module DblPipe3 where
 
 import ReWire
 import ReWire.Bits

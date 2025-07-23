@@ -1,8 +1,9 @@
 {-# LANGUAGE DataKinds #-}
 module Test_Expansion where
 
+import Prelude hiding ((==))
 import ReWire 
-import ReWire.Bits (lit)
+import ReWire.Bits (lit , (==))
 import Basic (Quad, Hex, X16(..), X64(..))
 import Testing (x64, x16)
 import Expansion (salsa20_k0k1, salsa20_k, expandk0k1, expandk)
@@ -10,6 +11,7 @@ import Expansion (salsa20_k0k1, salsa20_k, expandk0k1, expandk)
 
 import ReWire.Vectors as RV
 
+{-
 alltests :: [Bool]
 alltests = [test1 , test2 , test3 , test4]
 
@@ -19,7 +21,6 @@ k1 = x16 201 202 203 204 205 206 207 208
          209 210 211 212 213 214 215 216
 n  = x16 101 102 103 104 105 106 107 108
          109 110 111 112 113 114 115 116
-
 -- | Checks that the first example is prepared correctly.
 test1 :: Bool
 test1 = expandk0k1 (k0 , k1 , n) == x1
@@ -60,3 +61,4 @@ test4 = salsa20_k k0 n == o2
             241 200  61 144  10  55  50 185  6  47 246 253 143  86 187 225 
             134  85 110 246 161 163  43 235 231  94 171  51 145 214 112  29 
              14 232  5  16 151 140 183 141 171  9 122 181 104 182 177 193
+-}

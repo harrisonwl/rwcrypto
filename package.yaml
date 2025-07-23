@@ -47,6 +47,8 @@ library:
     - src
 #    - src/sha256
     - src/salsa20
+    - src/aes
+    - src/pipelining
 #    - external/BinaryArithmetic/src
 
 executables:

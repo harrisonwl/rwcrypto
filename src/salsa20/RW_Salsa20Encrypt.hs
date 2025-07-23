@@ -1,5 +1,5 @@
 {-# LANGUAGE DataKinds #-}
---module RW_Salsa20Encrypt (start) where
+module RW_Salsa20Encrypt (start) where
 
 -- | This is intended to be compilable with rwc.
 
@@ -61,7 +61,7 @@ data O = Ack                -- Nothing to output
 
 type Dev = ReacT I O S 
 
-{-# INLINE encryptM #-}
+-- {-# INLINE encryptM #-}
 encryptM :: W 8 -> S (W 8)
 encryptM mi = do
                  (k0 , k1 , v , i) <- get
@@ -69,7 +69,7 @@ encryptM mi = do
                  putctr (i + lit 1)
                  return mi'
 
-{-# INLINE action #-}
+-- {-# INLINE action #-}
 action :: I -> Dev I
 action (K0 k0)   = do
                       lift (putk0 k0)

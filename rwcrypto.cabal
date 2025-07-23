@@ -1,6 +1,6 @@
 cabal-version: 2.2
 
--- This file has been generated from package.yaml by hpack version 0.37.0.
+-- This file has been generated from package.yaml by hpack version 0.38.0.
 --
 -- see: https://github.com/sol/hpack
 
@@ -31,12 +31,10 @@ library
       DblX3
       DoubleRound
       Encrypt
-      Exec_Salsa20Encrypt
       Expansion
       HashSalsa20
       LittleEndian
       QuarterRound
-      RotWord
       RowRound
       RW_Salsa20Encrypt
       Test_ColumnRound
@@ -48,6 +46,22 @@ library
       Test_QuarterRound
       Test_RowRound
       Testing
+      AddRoundKey
+      AESBasic
+      AESMixColumns
+      AESTesting
+      Cipher
+      KeyExpansion
+      MixColumns
+      Reference_AES
+      RotWord
+      ShiftRows
+      SubBytes
+      Pipe123
+      Pipelining
+      RW_DoublePipe2
+      RW_Pipe123
+      RW_PipedDouble
   other-modules:
       Paths_rwcrypto
   autogen-modules:
@@ -55,6 +69,8 @@ library
   hs-source-dirs:
       src
       src/salsa20
+      src/aes
+      src/pipelining
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints
   build-depends:
       base ==4.20.*
