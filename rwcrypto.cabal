@@ -40,8 +40,6 @@ library
       Pipelined10xSalsa20
       QuarterRound
       RowRound
-      RW_DoublePipe2
-      RW_PipedDouble
       RW_Salsa20Encrypt
       Test_ColumnRound
       Test_DoubleRound
@@ -63,12 +61,11 @@ library
       RotWord
       ShiftRows
       SubBytes
-      CSA
-      Fubar
       Pipe123
-      Pipe3
       Pipelining
+      RW_DoublePipe2
       RW_Pipe123
+      RW_PipedDouble
   other-modules:
       Paths_rwcrypto
   autogen-modules:

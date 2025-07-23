@@ -1,16 +1,18 @@
 {-# LANGUAGE DataKinds #-}
-module Cipher where
+module AES.Cipher where
 
 import Prelude (($))
 import ReWire
 import ReWire.Bits ((^))
 import ReWire.Vectors (index , generate)
+import ReWire.Finite
+import ReWire.FiniteComp
 
-import AESBasic(State)
-import AddRoundKey(addRoundKey)
-import SubBytes(subbytes)
-import ShiftRows(shiftrows)
-import MixColumns(mixColumns)
+import AES.Basic(State)
+import AES.AddRoundKey(addRoundKey)
+import AES.SubBytes(subbytes)
+import AES.ShiftRows(shiftrows)
+import AES.MixColumns(mixColumns)
 
 
 --          Key Length (Nk words) | Block Size (Nb words) | Number of Rounds (Nr)
@@ -22,15 +24,22 @@ import MixColumns(mixColumns)
 -- AES-256 |          8           |           4           |        14
 --
 
-type State    = Vec 4 (Vec 4 (W 8))
 lkup :: Vec 4 (Vec 4 (W 8)) -> (Finite 4 , Finite 4) -> W 8
 lkup s (i , j) = (s `index` i) `index` j
 
 type WA = Vec 60 (W 32)
 
 
+-- proj :: Finite 15 -> WA -> Vec 4 (W 32)
+-- proj i w = generate $ \ j -> w `index` ((i * finite 4) + j)
 
-body :: Monad m => p -> StateT AESBasic.State m ()
+-- proj :: Finite 60 -> WA -> Vec 4 (W 32)
+proj i w = generate $ \ j -> w `index` ((i * 4) + j)
+
+foo :: Finite 15 -> Finite 60
+foo i = i 
+
+body :: Monad m => p -> StateT State m ()
 body round = do
   modify subbytes
   modify shiftrows
@@ -38,6 +47,8 @@ body round = do
   -- addRoundKey
   
 -- addRoundKey :: State -> RoundKey -> State
+-- type RoundKey = Vec 4 (Vec 4 (W 8))
+--    =~ Vec 4 (W 32)
 -- subbytes :: State -> State
 -- shiftrows :: State -> State
 -- mixColumns :: State -> State
