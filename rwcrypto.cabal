@@ -28,7 +28,6 @@ library
       Basic
       ColumnRound
       DblPipe3
-      DblX1
       DblX3
       DoubleRound
       Encrypt
@@ -36,10 +35,8 @@ library
       Expansion
       HashSalsa20
       LittleEndian
-      OneTwoThree
-      Pipe123
-      Pipelined10xSalsa20
       QuarterRound
+      RotWord
       RowRound
       RW_Salsa20Encrypt
       Test_ColumnRound
