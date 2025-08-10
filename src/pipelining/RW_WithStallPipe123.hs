@@ -1,32 +1,28 @@
 {-# LANGUAGE DataKinds #-}
-module Pipe123 where
+-- module RW_WithStallPipe123 where
 
 import Prelude hiding ((+))
-import ReWire (W , Bit , extrude)
+import ReWire -- (W , Bit , extrude)
 import ReWire.Bits (lit , (+))
-import ReWire.Interactive
+-- import ReWire.Interactive
 
-import Control.Monad.Identity 
-import Control.Monad.Resumption.Reactive 
+-- import Control.Monad.Identity 
+-- import Control.Monad.Resumption.Reactive 
 
 one , two , three :: W 8 -> W 8
 one x   = x + lit 1
 two x   = x + lit 2
 three x = x + lit 3
 
-refold :: Monad m => (ii -> oi) -> (oi -> ox) -> (oi -> ix -> ii) -> oi -> ix -> ReacT ix ox m ()
-refold f out conn oi ix = do
-                            let ii = conn oi ix
-                            let o = f ii
-                            ix' <- signal (out o)
-                            refold f out conn o ix'
+---------------------------------------
+--       the stalling version
+---------------------------------------
 
 out3 :: (a , b , c) -> c
 out3 (_ , _ , x) = x
 
----------------------------------------
---       the stalling version
----------------------------------------
+data Inp a = Stall | Arg a deriving Show
+data Out a = DC    | Val a deriving Show
 
 io_one , io_two , io_three :: Inp (W 8) -> Out (W 8)
 io_one Stall     = DC
@@ -45,35 +41,23 @@ conn (DC , Val x2 , _) ix     = (ix , Stall , Arg x2)
 thrice :: (Inp (W 8), Inp (W 8), Inp (W 8)) -> (Out (W 8), Out (W 8), Out (W 8))
 thrice (i1 , i2 , i3) = (io_one i1 , io_two i2 , io_three i3)
 
-pdbl3 :: Inp (W 8) -> ReacT (Inp (W 8)) (Out (W 8)) Identity ()
-pdbl3 = refold thrice out3 conn (DC , DC , DC)
+pipeline :: Monad m => (ii -> oi) -> (oi -> ox) -> (oi -> ix -> ii) -> oi -> ix -> ReacT ix ox m ()
+pipeline f out conn oi ix = do
+                            let ii = conn oi ix
+                            let o = f ii
+                            ix' <- signal (out o)
+                            pipeline f out conn o ix'
 
-startS :: ReacT (Inp (W 8)) (Out (W 8)) Identity ()
-startS = pdbl3 Stall
+withstall :: Inp (W 8) -> ReacT (Inp (W 8)) (Out (W 8)) Identity ()
+withstall = pipeline thrice out3 conn (DC , DC , DC)
 
-data Inp a = Stall | Arg a deriving Show
-data Out a = DC    | Val a deriving Show
-
----------------------------------------
---       the no-stall version
----------------------------------------
-
-cons :: (W 8 , W 8 , W 8) -> W 8 -> (W 8 ,  W 8 , W 8)
-cons (o1 , o2 , _) ix = (ix , o1 , o2)
-
-times3 :: (W 8 , W 8 , W 8) -> (W 8 ,  W 8 , W 8)
-times3 (i1 , i2 , i3) = (one i1 , two i2 , three i3)
-
-nostall :: W 8 -> ReacT (W 8) (W 8) Identity ()
-nostall = refold times3 out3 cons (lit 0 , lit 0 , lit 0)
-
-startNS :: ReacT (W 8) (W 8) Identity ()
-startNS = nostall (lit 99)
+start :: ReacT (Inp (W 8)) (Out (W 8)) Identity ()
+start = withstall Stall
 
 ---------------------------------------
 --       running tests, etc.
 ---------------------------------------
-
+{-
 instance Pretty a => Pretty (Inp a) where
   pp Stall   = "Stall"
   pp (Arg x) = "Arg " ++ pp x
@@ -85,11 +69,9 @@ instance Pretty a => Pretty (Out a) where
 ins :: [W 8]
 ins = map lit [0x1..0xF]
 
-exNS = runP startNS (lit 101 , lit 101) ins -- (Stall , DC) (map Arg ins)
-
 exS  :: WriterPlus (Inp (W 8), Out (W 8)) (Maybe ((), Inp (W 8)))
-exS = runP startS (Stall , DC) (map Arg ins)
-
+exS = runP start (Stall , DC) (map Arg ins)
+-}
 -- λ> pp exNS
 -- "(0x65,0x65) :> (0x01,0x03) :> (0x02,0x05) :> (0x03,0x69) :> (0x04,0x07) :> (0x05,0x08) :> (0x06,0x09) :> (0x07,0x0A) :> (0x08,0x0B) :> (0x09,0x0C) :> (0x0A,0x0D) :> (0x0B,0x0E) :> (0x0C,0x0F) :> (0x0D,0x10) :> (0x0E,0x11) :> (0x0F,0x12) :+> Nothing"
 
