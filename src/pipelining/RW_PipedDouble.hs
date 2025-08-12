@@ -78,21 +78,21 @@ ten (i0 , i1 , i2 , i3 , i4 , i5 , i6 , i7 , i8 , i9)
   = (dr1 i0 , dr1 i1 , dr1 i2 , dr1 i3 , dr1 i4 , dr1 i5 , dr1 i6 , dr1 i7 , dr1 i8 , dr1 i9)
   
 
-refold :: Monad m => (ii -> oi) -> (oi -> ox) -> (oi -> ix -> ii) -> oi -> ix -> ReacT ix ox m ()
-refold f out conn oi ix = do
+pipeline :: Monad m => (ii -> oi) -> (oi -> ox) -> (oi -> ix -> ii) -> oi -> ix -> ReacT ix ox m ()
+pipeline f out conn oi ix = do
                             let ii = conn oi ix
                             let o = f ii
                             ix' <- signal (out o)
-                            refold f out conn o ix'
+                            pipeline f out conn o ix'
   
 pipe2 :: Inp (Hex (W 32)) -> ReacT (Inp (Hex (W 32))) (Out (Hex (W 32))) Identity ()
-pipe2 = refold two out2 conn2 (DC , DC)
+pipe2 = pipeline two out2 conn2 (DC , DC)
 
 pipe5 :: Inp (Hex (W 32)) -> ReacT (Inp (Hex (W 32))) (Out (Hex (W 32))) Identity ()
-pipe5 = refold five out5 conn5 (DC , DC , DC , DC , DC)
+pipe5 = pipeline five out5 conn5 (DC , DC , DC , DC , DC)
 
 pipe10 :: Inp (Hex (W 32)) -> ReacT (Inp (Hex (W 32))) (Out (Hex (W 32))) Identity ()
-pipe10 = refold ten out10 conn10 (DC , DC , DC , DC , DC , DC , DC , DC , DC , DC)
+pipe10 = pipeline ten out10 conn10 (DC , DC , DC , DC , DC , DC , DC , DC , DC , DC)
 
 start :: ReacT (Inp (Hex (W 32))) (Out (Hex (W 32))) Identity ()
 -- start = pipe2 Stall
