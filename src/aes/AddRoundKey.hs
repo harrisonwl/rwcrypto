@@ -11,7 +11,7 @@ import AES.Basic(State , RoundKey)
 lkup :: Vec 4 (Vec 4 (W 8)) -> (Finite 4 , Finite 4) -> W 8
 lkup s (i , j) = (s `index` i) `index` j
 
-addRoundKey :: State -> RoundKey -> State
-addRoundKey s rk = generate $ \ i ->
+addRoundKey :: RoundKey -> State -> State
+addRoundKey rk s = generate $ \ i ->
                    generate $ \ j ->
                       lkup s (i , j) ^ lkup rk (i , j)             
