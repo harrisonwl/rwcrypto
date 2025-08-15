@@ -1,5 +1,5 @@
 {-# LANGUAGE DataKinds #-}
-module Pipelining.RW_PipedDouble where
+module Pipelining.RW_PipedDouble5 where
 
 import Prelude hiding ((+))
 import ReWire
@@ -16,7 +16,7 @@ type HxW32 = Hex (W 32)
 -- |
 -- | Boilerplate.
 -- |
--- | Each of these conn_/out_ and f*x functions could be constructed in a
+-- | Each of these conn_/out_ functions could be constructed in a
 -- | dependently-typed language like Agda. They appear as boilerplate here
 -- | because ReWire is embedded in Haskell.
 -- |
@@ -25,79 +25,38 @@ next :: Out a -> Inp a
 next DC      = Stall
 next (Val x) = Arg x
 
-conn2 :: (Out a, Out a) -> Inp a -> (Inp a, Inp a)
-conn2 (i , _) ix = (ix , next i)
-
 conn5 :: (Out a , Out a , Out a , Out a , Out a) ->
          Inp a                                   ->
          (Inp a , Inp a , Inp a , Inp a , Inp a)
 conn5 (i1 , i2 , i3 , i4 , _) ix = (ix , next i1 , next i2 , next i3 , next i4)
 
-conn10 :: (Out a , Out a , Out a , Out a , Out a , Out a , Out a , Out a , Out a , Out a) ->
-         Inp a                                   ->
-         (Inp a , Inp a , Inp a , Inp a , Inp a , Inp a , Inp a , Inp a , Inp a , Inp a)
-conn10 (i1 , i2 , i3 , i4 , i5 , i6 , i7 , i8 , i9 , _) ix
-  = (ix , next i1 , next i2 , next i3 , next i4 , next i5 , next i6 , next i7 , next i8 , next i9)
-
-out2 :: (Out a, Out a) -> Out a
-out2 (_ , o2) = o2
-
-
 out5 :: (Out a , Out a , Out a , Out a , Out a) -> Out a
 out5 (_ , _ , _ , _ , o5) = o5
 
-out10 :: (Out a , Out a , Out a , Out a , Out a , Out a , Out a , Out a , Out a , Out a) -> Out a
-out10 (_ , _ , _ , _ , _ , _ , _ , _ , _ , o10) = o10
-
 -- |
 -- |
 -- |
-
-dr1  :: Inp HxW32 -> Out HxW32
-dr1 Stall   = DC
-dr1 (Arg a) = Val (doubleround a)
 
 dr2  :: Inp HxW32 -> Out HxW32
 dr2 Stall   = DC
 dr2 (Arg a) = Val (doubleround . doubleround $ a)
 
-dr5  :: Inp HxW32 -> Out HxW32
-dr5 Stall   = DC
-dr5 (Arg a) = Val (doubleround . doubleround . doubleround . doubleround . doubleround $ a)
-
-two :: (Inp HxW32 , Inp HxW32) -> (Out HxW32 , Out HxW32) 
-two (i1 , i2) = (dr5 i1 , dr5 i2)
-  
 five :: (Inp HxW32 , Inp HxW32 , Inp HxW32 , Inp HxW32 , Inp HxW32) ->
         (Out HxW32 , Out HxW32 , Out HxW32 , Out HxW32 , Out HxW32) 
 five (i0 , i1 , i2 , i3 , i4) = (dr2 i0 , dr2 i1 , dr2 i2 , dr2 i3 , dr2 i4)
 
-ten :: (Inp HxW32 , Inp HxW32 , Inp HxW32 , Inp HxW32 , Inp HxW32 , Inp HxW32 , Inp HxW32 , Inp HxW32 , Inp HxW32 , Inp HxW32) ->
-        (Out HxW32 , Out HxW32 , Out HxW32 , Out HxW32 , Out HxW32 , Out HxW32 , Out HxW32 , Out HxW32 , Out HxW32 , Out HxW32) 
-ten (i0 , i1 , i2 , i3 , i4 , i5 , i6 , i7 , i8 , i9)
-  = (dr1 i0 , dr1 i1 , dr1 i2 , dr1 i3 , dr1 i4 , dr1 i5 , dr1 i6 , dr1 i7 , dr1 i8 , dr1 i9)
-  
-
-refold :: Monad m => (ii -> oi) -> (oi -> ox) -> (oi -> ix -> ii) -> oi -> ix -> ReacT ix ox m ()
-refold f out conn oi ix = do
+pipeline :: Monad m => (ii -> oi) -> (oi -> ox) -> (oi -> ix -> ii) -> oi -> ix -> ReacT ix ox m ()
+pipeline f out conn oi ix = do
                             let ii = conn oi ix
                             let o = f ii
                             ix' <- signal (out o)
-                            refold f out conn o ix'
-  
-pipe2 :: Inp (Hex (W 32)) -> ReacT (Inp (Hex (W 32))) (Out (Hex (W 32))) Identity ()
-pipe2 = refold two out2 conn2 (DC , DC)
+                            pipeline f out conn o ix'
 
 pipe5 :: Inp (Hex (W 32)) -> ReacT (Inp (Hex (W 32))) (Out (Hex (W 32))) Identity ()
-pipe5 = refold five out5 conn5 (DC , DC , DC , DC , DC)
-
-pipe10 :: Inp (Hex (W 32)) -> ReacT (Inp (Hex (W 32))) (Out (Hex (W 32))) Identity ()
-pipe10 = refold ten out10 conn10 (DC , DC , DC , DC , DC , DC , DC , DC , DC , DC)
+pipe5 = pipeline five out5 conn5 (DC , DC , DC , DC , DC)
 
 start :: ReacT (Inp (Hex (W 32))) (Out (Hex (W 32))) Identity ()
--- start = pipe2 Stall
--- start = pipe5 Stall
-start = pipe10 Stall
+start = pipe5 Stall
 
 {-
 
