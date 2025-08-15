@@ -36,6 +36,7 @@ library
       LittleEndian
       QuarterRound
       RowRound
+      RW_DoublePipe2
       RW_Salsa20Encrypt
       Test_ColumnRound
       Test_DoubleRound
