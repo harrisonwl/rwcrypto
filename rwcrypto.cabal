@@ -41,7 +41,9 @@ library
       Pipelined10xSalsa20
       QuarterRound
       RowRound
-      RW_DoublePipe2
+      RW_PipedDouble10
+      RW_PipedDouble2
+      RW_PipedDouble5
       RW_Salsa20Encrypt
       Test_ColumnRound
       Test_DoubleRound

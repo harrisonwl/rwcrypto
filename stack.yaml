@@ -31,10 +31,6 @@ snapshot:
 #   - wai
 packages:
 # - external/BinaryArithmetic
-- external/ReWire
-- external/ReWire/rewire-core
-- external/ReWire/rewire-embedder
-- external/ReWire/rewire-user
 - .
 # Dependency packages to be pulled from upstream that are not in the snapshot.
 # These entries can reference officially published versions as well as
@@ -45,7 +41,10 @@ packages:
 # - git: https://github.com/commercialhaskell/stack.git
 #   commit: e7b331f14bcffb8367cd58fbfc8b40ec7642100a
 #
-# extra-deps: []
+extra-deps:
+- /Users/bill/ReWire/rewire-core
+- /Users/bill/ReWire/rewire-embedder  
+- /Users/bill/ReWire/rewire-user
 
 # Override default flag values for project packages and extra-deps
 # flags: {}
