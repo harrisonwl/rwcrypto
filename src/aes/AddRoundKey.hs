@@ -1,12 +1,12 @@
 {-# LANGUAGE DataKinds #-}
-module AES.AddRoundKey (addRoundKey) where
+module AddRoundKey (addRoundKey) where
 
 import Prelude (($))
 import ReWire
 import ReWire.Bits ((^))
 import ReWire.Vectors (index , generate)
 
-import AES.Basic(State , RoundKey)
+import AESBasic(State , RoundKey)
 
 lkup :: Vec 4 (Vec 4 (W 8)) -> (Finite 4 , Finite 4) -> W 8
 lkup s (i , j) = (s `index` i) `index` j

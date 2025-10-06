@@ -1,5 +1,5 @@
 {-# LANGUAGE DataKinds #-}
-module AES.Cipher where
+module Cipher where
 
 import Prelude (($))
 import ReWire
@@ -8,11 +8,11 @@ import ReWire.Vectors -- (index , generate)
 import ReWire.Finite
 import ReWire.FiniteComp
 
-import AES.Basic(State,RoundKey)
-import AES.AddRoundKey(addRoundKey)
-import AES.SubBytes(subbytes)
-import AES.ShiftRows(shiftrows)
-import AES.MixColumns(mixColumns)
+import AESBasic(State,RoundKey)
+import AddRoundKey(addRoundKey)
+import SubBytes(subbytes)
+import ShiftRows(shiftrows)
+import MixColumns(mixColumns)
 
 
 --          Key Length (Nk words) | Block Size (Nb words) | Number of Rounds (Nr)

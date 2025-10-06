@@ -4,7 +4,7 @@ module Testing (x16, x64) where
 
 import ReWire
 import ReWire.Bits(lit)
-import Basic
+import Salsa20Basic
 -- import Data.Bool (Bool)
 
 -- | When you get into larger tuples, the Haskell Prelude doesn't

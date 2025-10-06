@@ -4,7 +4,7 @@ module Test_Encrypt (alltests , mknonce , mkk0k1 , w8ToChar , charToW8) where
 import Prelude hiding ((+))
 import ReWire
 import ReWire.Bits (lit,toInteger,(+))
-import Basic (Oct, Hex, X16(..))
+import Salsa20Basic (Oct, Hex, X16(..))
 import Encrypt (encrypt,encrypt')
 
 encryptS2O :: String -> String

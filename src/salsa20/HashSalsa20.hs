@@ -4,7 +4,7 @@ module HashSalsa20(hash_salsa20,hash) where
 import Prelude hiding ((+) , (<>)) 
 import ReWire
 import ReWire.Bits ((+))
-import Basic (Hex, X16(..), X64(..))
+import Salsa20Basic (Hex, X16(..), X64(..))
 import DoubleRound (doubleround)
 import LittleEndian (littleendian,inv_littleendian,littleendian')
 

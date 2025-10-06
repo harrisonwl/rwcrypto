@@ -5,7 +5,7 @@ import qualified Prelude as P
 import ReWire
 import ReWire.Bits (lit , (==))
 import ReWire.Vectors (slice)
-import Basic (Quad)
+import Salsa20Basic (Quad)
 import LittleEndian(littleendian, inv_littleendian)
 
 slice0 :: W 32 -> W 8

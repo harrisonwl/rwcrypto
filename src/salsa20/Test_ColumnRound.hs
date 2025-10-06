@@ -1,7 +1,7 @@
 {-# LANGUAGE DataKinds #-}
 module Test_ColumnRound (alltests) where
 
-import Basic()
+import Salsa20Basic()
 import Testing
 import ColumnRound(columnround)
 

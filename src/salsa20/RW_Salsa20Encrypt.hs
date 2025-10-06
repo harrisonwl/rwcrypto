@@ -6,7 +6,7 @@ module RW_Salsa20Encrypt (start) where
 import Prelude hiding ((^) , (+))
 import ReWire 
 import ReWire.Bits ( lit , (^) , (+) )
-import Basic (Oct, Hex, pi64 , X16(..) )
+import Salsa20Basic (Oct, Hex, pi64 , X16(..) )
 import Encrypt( encrypt )
 
 -- |

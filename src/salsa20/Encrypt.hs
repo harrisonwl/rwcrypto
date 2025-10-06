@@ -6,7 +6,7 @@ import ReWire
 import ReWire.Bits ((^))
 import ReWire.Vectors (slice)
 
-import Basic (Oct, Hex, pi64, splice)
+import Salsa20Basic (Oct, Hex, pi64, splice)
 import Expansion(salsa20_k0k1,salsa20_k0k1',back)
 
 encrypt :: Hex (W 8) -> Hex (W 8) -> Oct (W 8) -> W 64 -> W 8 ->  W 8
