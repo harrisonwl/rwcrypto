@@ -1,6 +1,6 @@
 cabal-version: 2.2
 
--- This file has been generated from package.yaml by hpack version 0.38.0.
+-- This file has been generated from package.yaml by hpack version 0.37.0.
 --
 -- see: https://github.com/sol/hpack
 
@@ -28,14 +28,22 @@ library
       Basic
       ColumnRound
       DblPipe3
+      DblX1
       DblX3
       DoubleRound
       Encrypt
+      Exec_Salsa20Encrypt
       Expansion
       HashSalsa20
       LittleEndian
+      Naive_DR10
+      OneTwoThree
+      Pipelined10xSalsa20
       QuarterRound
       RowRound
+      RW_PipedDouble10
+      RW_PipedDouble2
+      RW_PipedDouble5
       RW_Salsa20Encrypt
       Test_ColumnRound
       Test_DoubleRound
@@ -47,21 +55,22 @@ library
       Test_RowRound
       Testing
       AddRoundKey
-      AESBasic
       AESMixColumns
       AESTesting
+      Basic
       Cipher
+      Cipher128
+      Cipher256
+      HackyCipher
       KeyExpansion
       MixColumns
       Reference_AES
       RotWord
       ShiftRows
       SubBytes
-      Pipe123
       Pipelining
       RW_DoublePipe2
-      RW_Pipe123
-      RW_PipedDouble
+      RW_PipedDouble2
   other-modules:
       Paths_rwcrypto
   autogen-modules:
