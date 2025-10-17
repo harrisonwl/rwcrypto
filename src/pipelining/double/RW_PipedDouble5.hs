@@ -1,12 +1,12 @@
 {-# LANGUAGE DataKinds #-}
-module Pipelining.RW_PipedDouble5 where
+-- module RW_PipedDouble5 where
 
 import Prelude hiding ((+))
 import ReWire
 import ReWire.Bits hiding (one)
 
-import Salsa20.Basic (Hex)
-import Salsa20.DoubleRound (doubleround)
+import Salsa20Basic (Hex)
+import DoubleRound (doubleround)
 
 data Inp a = Stall | Arg a
 data Out a = DC    | Val a
