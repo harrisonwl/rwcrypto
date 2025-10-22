@@ -28,17 +28,12 @@ library
       Basic
       ColumnRound
       DblPipe3
-      DblX1
       DblX3
       DoubleRound
       Encrypt
-      Exec_Salsa20Encrypt
       Expansion
       HashSalsa20
       LittleEndian
-      Naive_DR10
-      OneTwoThree
-      Pipelined10xSalsa20
       QuarterRound
       RowRound
       RW_DoublePipe2
@@ -59,7 +54,6 @@ library
       Cipher
       Cipher128
       Cipher256
-      HackyCipher
       KeyExpansion
       MixColumns
       Reference_AES
@@ -68,7 +62,6 @@ library
       SubBytes
       Pipelining
       RW_DoublePipe2
-      RW_PipedDouble2
   other-modules:
       Paths_rwcrypto
   autogen-modules:
