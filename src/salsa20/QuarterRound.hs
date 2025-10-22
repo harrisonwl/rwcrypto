@@ -1,5 +1,5 @@
 {-# LANGUAGE DataKinds #-}
-module Salsa20.QuarterRound(quarterround) where
+module QuarterRound(quarterround) where
 
 import Prelude hiding ((+) , (^))
 import ReWire

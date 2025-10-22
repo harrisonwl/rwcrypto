@@ -1,5 +1,5 @@
 {-# LANGUAGE DataKinds #-}
-module AES.Basic(State , Column , RoundKey) where
+module AESBasic(State , Column , RoundKey) where
 
 import ReWire
 import ReWire.Vectors

@@ -3,9 +3,8 @@ module LittleEndian(littleendian , inv_littleendian , littleendian') where
 
 import Prelude hiding ((++))
 import ReWire
--- import ReWire.Bits (lit , (==))
 import ReWire.Vectors (slice , (++))
-import Basic (Quad)
+import Salsa20Basic (Quad)
 
 -----------------------------
 -- The littleendian function from page 6

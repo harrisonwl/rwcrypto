@@ -3,7 +3,7 @@ module DblPipe3 where
 
 import ReWire
 import ReWire.Bits
-import Basic (Hex , X16(..))
+import Salsa20Basic (Hex , X16(..))
 import DoubleRound(doubleround)
 
 data Inp a = Stall | Arg a

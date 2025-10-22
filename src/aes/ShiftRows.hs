@@ -1,7 +1,7 @@
 {-# LANGUAGE TypeOperators #-}
 {-# LANGUAGE DataKinds #-}
 -- {-# OPTIONS_GHC -fplugin GHC.TypeLits.Normalise #-}
-module AES.ShiftRows (shiftrows) where
+module ShiftRows (shiftrows) where
 
 import Prelude               as P
 import ReWire
@@ -10,7 +10,7 @@ import ReWire.Finite
 import ReWire.FiniteComp     as FC
 import ReWire.Vectors        as RWV
 
-import AES.Basic
+import AESBasic
 -- type State  = Vec 4 (Vec 4 (W 8))
 -- type Column = Vec 4 (W 8)
     

@@ -2,7 +2,7 @@
 module Test_RowRound(alltests) where
 
 import ReWire
-import Basic (X16(..))
+import Salsa20Basic (X16(..))
 import Testing 
 import RowRound(rowround)
 

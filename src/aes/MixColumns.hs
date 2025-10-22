@@ -1,7 +1,7 @@
 {-# LANGUAGE TypeOperators #-}
 {-# LANGUAGE DataKinds #-}
 -- {-# OPTIONS_GHC -fplugin GHC.TypeLits.Normalise #-}
-module AES.MixColumns (mixColumns) where
+module MixColumns (mixColumns) where
 
 import Prelude (Integer , ($) , IO , putStrLn , (++))
 import ReWire
@@ -11,7 +11,7 @@ import ReWire.FiniteComp     as FC
 import ReWire.Vectors hiding ((++))
 import ReWire.Interactive (dshow , hex , xshow)
 
-import AES.Basic
+import AESBasic
 
 -- type State  = Vec 4 (Vec 4 (W 8))
 -- type Column = Vec 4 (W 8)

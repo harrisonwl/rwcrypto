@@ -5,7 +5,7 @@ import Prelude hiding ((++))
 import ReWire 
 import ReWire.Bits (lit)
 import ReWire.Vectors (slice , (++))
-import Basic (Quad, Hex, X16(..), X64(..))
+import Salsa20Basic (Quad, Hex, X16(..), X64(..))
 import HashSalsa20 (hash_salsa20,hash)
 
 b2w32 :: W 8 -> W 8 -> W 8 -> W 8 -> W 32

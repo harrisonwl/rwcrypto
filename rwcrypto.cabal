@@ -25,7 +25,6 @@ source-repository head
 
 library
   exposed-modules:
-      Basic
       ColumnRound
       DblPipe3
       DblX3
@@ -34,10 +33,12 @@ library
       Expansion
       HashSalsa20
       LittleEndian
+      OneTwoThree
+      Pipelined10xSalsa20
       QuarterRound
       RowRound
-      RW_DoublePipe2
       RW_Salsa20Encrypt
+      Salsa20Basic
       Test_ColumnRound
       Test_DoubleRound
       Test_Encrypt
@@ -48,9 +49,9 @@ library
       Test_RowRound
       Testing
       AddRoundKey
+      AESBasic
       AESMixColumns
       AESTesting
-      Basic
       Cipher
       Cipher128
       Cipher256
@@ -61,7 +62,6 @@ library
       ShiftRows
       SubBytes
       Pipelining
-      RW_DoublePipe2
   other-modules:
       Paths_rwcrypto
   autogen-modules:

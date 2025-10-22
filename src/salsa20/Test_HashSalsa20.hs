@@ -3,7 +3,7 @@
 module Test_HashSalsa20(alltests) where
 
 import ReWire
-import Basic (X64(..))
+import Salsa20Basic (X64(..))
 import Testing (x64)
 import HashSalsa20 (hash_salsa20)
 

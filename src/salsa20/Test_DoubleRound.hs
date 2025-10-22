@@ -2,7 +2,7 @@
 module Test_DoubleRound (doubleround , alltests) where
 
 import ReWire
-import Basic
+import Salsa20Basic
 import Testing
 import DoubleRound(doubleround)
 

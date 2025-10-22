@@ -1,5 +1,5 @@
 {-# LANGUAGE DataKinds #-}
-module AES.SubBytes(subbytes , subword) where
+module SubBytes(subbytes , subword) where
 
 import Prelude (($) , Integer , map , (.) , IO , putStrLn , (++))
 import ReWire
@@ -9,7 +9,7 @@ import ReWire.Vectors (index , drop , take , generate)
 
 import ReWire.Interactive (dshow , hex , xshow)
 
-import AES.Basic(State , Column)
+import AESBasic(State , Column)
 
 type SBox   = Vec 0x10 (Vec 0x10 (W 8))
 type Index  = Finite 0x10

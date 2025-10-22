@@ -1,5 +1,5 @@
 {-# LANGUAGE DataKinds #-}
-module Salsa20.Basic (Oct, Hex, pi64, splice, Quad, X16(..), X64(..)) where
+module Salsa20Basic (Oct, Hex, pi64, splice, Quad, X16(..), X64(..)) where
 
 import Prelude hiding ((==))
 import ReWire
