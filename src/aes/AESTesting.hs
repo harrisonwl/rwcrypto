@@ -9,7 +9,7 @@ import ReWire.Vectors (index , generate)
 
 import ReWire.Interactive (dshow , hex , xshow)
 
-import AddRoundKey(addRoundKey)
+import Aes.AddRoundKey(addRoundKey)
 
 type State    = Vec 4 (Vec 4 (W 8))
 type RoundKey = Vec 4 (Vec 4 (W 8))

@@ -30,11 +30,13 @@ dependencies:
 - vector
 - monad-resumption
 - mtl
+- ghc-typelits-natnormalise
 
 ghc-options:
 - -Wall
 - -Wcompat
 - -Widentities
+- -Wno-name-shadowing
 - -Wincomplete-record-updates
 - -Wincomplete-uni-patterns
 - -Wmissing-export-lists
@@ -45,11 +47,34 @@ ghc-options:
 library:
   source-dirs:
     - src
+#    - src/sha3
 #    - src/sha256
-    - src/salsa20
-    - src/aes
-    - src/pipelining
+    # - src/salsa20
+    # - src/aes
+    # - src/pipelining
+    # - src/cubehash
 #    - external/BinaryArithmetic/src
+  exposed-modules:
+    - Cubehash.CubeHash8_1_256
+    - Cubehash.Simplest
+    - Salsa20.ColumnRound
+    - Salsa20.DoubleRound
+    - Salsa20.Encrypt
+    - Salsa20.Expansion
+    - Salsa20.HashSalsa20
+    - Salsa20.LittleEndian
+    - Salsa20.QuarterRound
+    - Salsa20.RowRound
+    - Salsa20.Testing
+    - Salsa20.Test_ColumnRound
+    - Salsa20.Test_DoubleRound
+    - Salsa20.Test_Encrypt
+    - Salsa20.Test_Expansion
+    - Salsa20.Test_HashSalsa20
+    - Salsa20.Test_LittleEndian
+    - Salsa20.Test_QuarterRound
+    - Salsa20.Test_RowRound
+
 
 executables:
   rwcrypto-exe:

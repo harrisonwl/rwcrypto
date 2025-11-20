@@ -1,11 +1,11 @@
 {-# LANGUAGE DataKinds #-}
-module Test_Encrypt (alltests , mknonce , mkk0k1 , w8ToChar , charToW8) where
+module Salsa20.Test_Encrypt (alltests , mknonce , mkk0k1 , w8ToChar , charToW8) where
 
 import Prelude hiding ((+))
 import ReWire
 import ReWire.Bits (lit,toInteger,(+))
-import Salsa20Basic (Oct, Hex, X16(..))
-import Encrypt (encrypt,encrypt')
+import Salsa20.Salsa20Basic (Oct, Hex, X16(..))
+import Salsa20.Encrypt (encrypt,encrypt')
 
 encryptS2O :: String -> String
 encryptS2O text = map w8ToChar (encode64 k0 k1 v (lit 0) m)

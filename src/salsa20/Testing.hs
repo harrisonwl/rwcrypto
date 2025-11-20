@@ -1,10 +1,10 @@
 {-# LANGUAGE DataKinds #-}
 {-# OPTIONS_GHC -fno-warn-orphans #-}
-module Testing (x16, x64) where
+module Salsa20.Testing (x16, x64) where
 
 import ReWire
 import ReWire.Bits(lit)
-import Salsa20Basic
+import Salsa20.Salsa20Basic
 -- import Data.Bool (Bool)
 
 -- | When you get into larger tuples, the Haskell Prelude doesn't

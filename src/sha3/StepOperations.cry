@@ -1,0 +1,109 @@
+module StepOperations where
+
+// Each of the step operations has been snarfed from
+//   cryptol-specs/Primitive/Keyless/Hash/SHA3/Specification.cry
+// to generate gold standard tests for the ReWire versions.
+
+// Each state is a 5×5 array of 64-bit words
+type State = [5][5][64]
+
+// Theta step
+theta : State -> State
+theta A = A'
+  where
+    C = [ A@x@0 ^ A@x@1 ^ A@x@2 ^ A@x@3 ^ A@x@4
+        | x <- [0 .. 4] ]
+    D = [ C@((x - 1) % 5) ^ (C@((x + 1) % 5) <<< 1)
+        | x <- [0 .. 4] ]
+    A' = [ [ A@x@y ^ D@x | y <- [0 .. 4] ]
+         | x <- [0 .. 4] ]
+
+rho : State -> State
+rho A = A' where
+        // Step 1.
+        A1 = [[ if (x == 0) && (y == 0) then A@0@0 else zero
+            | y <- [0..4]]
+            | x <- [0..4]]
+        // Step 2-3.
+        As = [((1,0), A1)] #
+            [ ((y, (2*x + 3*y) % 5), set_lane x y t Ai)
+            | ((x, y), Ai) <- As
+            | t <- [0..23]]
+        (_, A') = As ! 0
+
+        // Step 3a. Update the lane defined by x' and y'.
+        set_lane x' y' t Ai = [[
+            if (x' == x) && (y' == y) then A@x@y <<< ((t+1)*(t+2)/2)
+            else Ai@x@y
+            | y <- [0..4]]
+            | x <- [0..4]]
+
+pi : State -> State
+pi A = [[ A @((x + 3 * y) % 5) @x
+        | y <- [0..4]]
+        | x <- [0..4]]
+
+chi : State -> State
+chi A = [[ A @x @y ^ (~A @((x + 1) % 5) @y && A @((x + 2) % 5) @y)
+        | y <- [0..4]]
+        | x <- [0..4]]
+
+// ell : Integer
+// ell = 6 // in this instance.
+
+// w : Integer
+// w = 64
+
+rc_hardcoded : Integer -> Bit
+rc_hardcoded t = constants @ (t') where
+        constants = join [
+            0x80b1e87f90a7d57062b32fde6ee54a25,
+            0xa339e361175edf0d35b504ec9303a471
+        ]
+        // Cryptol's SMT interface disallows index by symbolic `Integer`.
+        // To faciliate proofs, we convert to a bitvector.
+        // Justification: for all integers i,
+        // (i % 255) % 256 == (i % 255)
+        t' = fromInteger (t % 255) : [8]
+
+//
+// Different from Specification.cry in that
+// ell=6 and w=64 are hardcoded.
+//
+iota : State -> Integer -> State
+iota A ir = A'' where
+        // Step 1.
+        A' = A
+        // Step 2.
+        RC0 = zero : [64] // hc w==64
+        // Step 3. 0 is the identity for XOR, so we iteratively set the
+        // `2^j-1`th element by XORing the previously-set bits of RC with the
+        // correct value at the desired index.
+        RCs = [RC0] # [RC' ^ (zext`{64} [rc_hardcoded (toInteger j + 7 * ir)] << (2^^j - 1))
+            | RC' <- RCs
+            | j <- [0..6] ]   // ell =6
+        RC = (RCs ! 0) : [64]  // w = 64
+        // Step 4.
+        A'' = [[ if (x == 0) && (y == 0) then A'@0@0 ^ RC else A'@x@y
+            | y <- [0..4]]
+            | x <- [0..4]]
+
+
+
+// ----------------------------------------------------------------
+// Random test vector generation
+// ----------------------------------------------------------------
+
+// Generate 10 random 5×5×64-bit states
+st : State
+st = random (zero : [256])
+ 
+randStates : [1000] State
+randStates = random (zero : [256])
+
+// Generate (input, output) pairs
+testVectors : (State -> State) -> [1000](State, State)
+testVectors f = [ (s, f s) | s <- randStates ]
+
+// Note to Self: generating a test battery
+// cryptol StepOperations.cry -b gen_theta > testvectors/thetatest.txt

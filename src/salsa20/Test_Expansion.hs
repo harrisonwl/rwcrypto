@@ -1,12 +1,12 @@
 {-# LANGUAGE DataKinds #-}
-module Test_Expansion where
+module Salsa20.Test_Expansion where
 
 import Prelude hiding ((==))
 import ReWire 
 import ReWire.Bits (lit , (==))
-import Salsa20Basic (Quad, Hex, X16(..), X64(..))
-import Testing (x64, x16)
-import Expansion (salsa20_k0k1, salsa20_k, expandk0k1, expandk)
+import Salsa20.Salsa20Basic (Quad, Hex, X16(..), X64(..))
+import Salsa20.Testing (x64, x16)
+import Salsa20.Expansion (salsa20_k0k1, salsa20_k, expandk0k1, expandk)
 -- import HashSalsa20 (hash_salsa20)
 
 import ReWire.Vectors as RV

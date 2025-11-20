@@ -1,5 +1,5 @@
 {-# LANGUAGE DataKinds #-}
-module Reference_AES where
+module Aes.Reference_AES where
 
 import Prelude hiding ((*) , (+) , (==))
 import ReWire

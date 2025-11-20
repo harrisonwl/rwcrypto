@@ -1,5 +1,5 @@
 {-# LANGUAGE DataKinds #-}
-module KeyExpansion where
+module Aes.KeyExpansion where
 
 import Prelude hiding ((*) , (+) , (==))
 import ReWire
@@ -7,7 +7,7 @@ import ReWire.Bits
 import ReWire.Vectors
 -- import ReWire.Interactive
 
-import SubBytes(subword)
+import Aes.SubBytes(subword)
 
 --          Key Length (Nk words) | Block Size (Nb words) | Number of Rounds (Nr)
 -- -------------------------------------------------------------------------------

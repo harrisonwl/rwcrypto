@@ -9,7 +9,7 @@
 -- Reference: NIST FIPS 197 - Advanced Encryption Standard (AES)
 -- Section 5.1.3: MixColumns() Transformation
 
-module AESMixColumns where
+module Aes.AESMixColumns where
 
 import Data.Word (Word8)
 import Data.Bits (xor, shiftL, shiftR, (.&.))

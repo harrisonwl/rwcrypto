@@ -1,10 +1,10 @@
 {-# LANGUAGE DataKinds #-}
-module Test_RowRound(alltests) where
+module Salsa20.Test_RowRound(alltests) where
 
 import ReWire
-import Salsa20Basic (X16(..))
-import Testing 
-import RowRound(rowround)
+import Salsa20.Salsa20Basic (X16(..))
+import Salsa20.Testing 
+import Salsa20.RowRound(rowround)
 
 alltests :: [Bool]
 alltests = [test1 , test2]

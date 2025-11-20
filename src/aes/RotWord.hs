@@ -1,5 +1,5 @@
 {-# LANGUAGE DataKinds #-}
-module RotWord where
+module Aes.RotWord where
 
 import Prelude hiding (head,tail)
 import ReWire

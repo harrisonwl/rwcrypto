@@ -1,10 +1,10 @@
 {-# LANGUAGE DataKinds #-}
-module Test_QuarterRound(alltests) where
+module Salsa20.Test_QuarterRound(alltests) where
 
 import Prelude hiding ((+) , (^))
 import ReWire()
 import ReWire.Bits (lit)
-import QuarterRound(quarterround)
+import Salsa20.QuarterRound(quarterround)
 
 -----------------------------
 -- The quarterround function from page 2 of

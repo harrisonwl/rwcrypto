@@ -25,61 +25,38 @@ source-repository head
 
 library
   exposed-modules:
-      ColumnRound
-      DblPipe3
-      DblX1
-      DblX3
-      DoubleRound
-      Encrypt
-      Exec_Salsa20Encrypt
-      Expansion
-      HashSalsa20
-      LittleEndian
-      OneTwoThree
-      Pipelined10xSalsa20
-      QuarterRound
-      RowRound
-      RW_Salsa20Encrypt
-      Salsa20Basic
-      Test_ColumnRound
-      Test_DoubleRound
-      Test_Encrypt
-      Test_Expansion
-      Test_HashSalsa20
-      Test_LittleEndian
-      Test_QuarterRound
-      Test_RowRound
-      Testing
-      AddRoundKey
-      AESBasic
-      AESMixColumns
-      AESTesting
-      Cipher
-      Cipher128
-      Cipher256
-      HackyCipher
-      KeyExpansion
-      MixColumns
-      Reference_AES
-      RotWord
-      ShiftRows
-      SubBytes
-      Pipelining
+      Cubehash.CubeHash8_1_256
+      Cubehash.Simplest
+      Salsa20.ColumnRound
+      Salsa20.DoubleRound
+      Salsa20.Encrypt
+      Salsa20.Expansion
+      Salsa20.HashSalsa20
+      Salsa20.LittleEndian
+      Salsa20.QuarterRound
+      Salsa20.RowRound
+      Salsa20.Testing
+      Salsa20.Test_ColumnRound
+      Salsa20.Test_DoubleRound
+      Salsa20.Test_Encrypt
+      Salsa20.Test_Expansion
+      Salsa20.Test_HashSalsa20
+      Salsa20.Test_LittleEndian
+      Salsa20.Test_QuarterRound
+      Salsa20.Test_RowRound
   other-modules:
       Paths_rwcrypto
   autogen-modules:
       Paths_rwcrypto
   hs-source-dirs:
       src
-      src/salsa20
-      src/aes
-      src/pipelining
-  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints
+  ghc-options: -Wall -Wcompat -Widentities -Wno-name-shadowing -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints
   build-depends:
       base ==4.20.*
     , directory ==1.3.*
     , filepath ==1.5.*
     , ghc ==9.10.*
+    , ghc-typelits-natnormalise
     , lens ==5.3.*
     , monad-resumption
     , mtl
@@ -96,12 +73,13 @@ executable rwcrypto-exe
       Paths_rwcrypto
   hs-source-dirs:
       app
-  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
+  ghc-options: -Wall -Wcompat -Widentities -Wno-name-shadowing -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       base ==4.20.*
     , directory ==1.3.*
     , filepath ==1.5.*
     , ghc ==9.10.*
+    , ghc-typelits-natnormalise
     , lens ==5.3.*
     , monad-resumption
     , mtl
@@ -120,12 +98,13 @@ test-suite rwcrypto-test
       Paths_rwcrypto
   hs-source-dirs:
       test
-  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
+  ghc-options: -Wall -Wcompat -Widentities -Wno-name-shadowing -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       base ==4.20.*
     , directory ==1.3.*
     , filepath ==1.5.*
     , ghc ==9.10.*
+    , ghc-typelits-natnormalise
     , lens ==5.3.*
     , monad-resumption
     , mtl

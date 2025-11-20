@@ -1,11 +1,11 @@
 {-# LANGUAGE DataKinds #-}
 {-# OPTIONS_GHC -fno-warn-orphans #-}
-module Test_HashSalsa20(alltests) where
+module Salsa20.Test_HashSalsa20(alltests) where
 
 import ReWire
-import Salsa20Basic (X64(..))
-import Testing (x64)
-import HashSalsa20 (hash_salsa20)
+import Salsa20.Salsa20Basic (X64(..))
+import Salsa20.Testing (x64)
+import Salsa20.HashSalsa20 (hash_salsa20)
 
 alltests :: [Bool]
 alltests = [ test1 , test2 , test3 {- , test4 -} ]

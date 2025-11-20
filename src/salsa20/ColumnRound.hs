@@ -1,9 +1,9 @@
 {-# LANGUAGE DataKinds #-}
-module ColumnRound (columnround) where
+module Salsa20.ColumnRound (columnround) where
 
 import ReWire
-import Salsa20Basic (X16(..), Hex)
-import QuarterRound(quarterround)
+import Salsa20.Salsa20Basic (X16(..), Hex)
+import Salsa20.QuarterRound(quarterround)
 
 -----------------------------
 -- The columnround function from page 4 of
