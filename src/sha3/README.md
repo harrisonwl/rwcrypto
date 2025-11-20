@@ -1,4 +1,4 @@
-This code started originally in the pqc repo. I'm moving it over.
+This code started originally in my (private) pqc repo.
 
 This design is drawn directly from the SHA-3 Standard:
   * https://nvlpubs.nist.gov/nistpubs/fips/nist.fips.202.pdf
@@ -24,7 +24,7 @@ where the first component of each pair is an input state (A) and the second is t
  * The Haskell program Test.hs imports these ReWire definitions, ingests 
  test batteries computed by Cryptol, and ensures, for any (i,o) in that 
  battery and ReWire step operation f, that f i == o.
- * Each of the ReWire step operations tested correctly against 1000-case test 
+ * Each of the ReWire step operations and the round-function composition, `rnd`, tested correctly against 1000-case test 
  batteries. The call looks like:
 > λ> test theta "testvectors/theta1000.txt"
 >    Just [True,<...snip...>,True]
