@@ -1,5 +1,4 @@
 {-# LANGUAGE DataKinds #-}
-{-# OPTIONS_GHC -fplugin GHC.TypeLits.Normalise #-}
 module Sha3.Iota (iota, rc) where
 
 import Prelude hiding ((^) , (++))

@@ -88,6 +88,13 @@ iota A ir = A'' where
             | y <- [0..4]]
             | x <- [0..4]]
 
+// This is from line 426 of 
+//     cryptol-specs/Primitive/Keyless/Hash/SHA3/Specification.cry
+// except that it uses the original rho rather than the optimized
+// (i.e., "hardcoded") version.
+
+Rnd : State -> Integer -> State
+Rnd A ir = iota (chi (pi (rho (theta A)))) ir
 
 
 // ----------------------------------------------------------------

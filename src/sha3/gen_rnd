@@ -1,0 +1,1 @@
+testVectors (\ a -> Rnd a 3)

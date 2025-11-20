@@ -1,5 +1,14 @@
 This code started originally in the pqc repo. I'm moving it over.
 
+This design is drawn directly from the SHA-3 Standard:
+  * https://nvlpubs.nist.gov/nistpubs/fips/nist.fips.202.pdf
+
+In particular, if you look at Table 1 on page 7 of the above, this design
+hardcodes specific values:
+  * b = 1600
+  * w = 64, and
+  * l = 6
+
 To generate test vectors in a file, type, for example:
    > cryptol StepOperations.cry -b gen_rho > testvectors/rho1000.txt
 where the contents of ./gen_rho is:

@@ -22,6 +22,7 @@ import Sha3.Rho(rho)
 import Sha3.Iota(iota)
 import Sha3.Pi(pi)
 import Sha3.Chi(chi)
+import Sha3.Rnd(rnd)
 
 test :: (A -> A) -> FilePath -> IO (Maybe [Bool])
 test f file = do
