@@ -1,13 +1,11 @@
 {-# LANGUAGE DataKinds #-}
 {-# OPTIONS_GHC -fplugin GHC.TypeLits.Normalise #-}
 module Sha3.Layout ( A , C , D
-                   , readA , readC , writeC , putD , rdArr , wrArr ) where
+                   , readA , readC , writeC , putD , rdArr , wrArr) where
 
-import ReWire hiding (ReacT,Identity,signal,lift, get, put, StateT)
+import ReWire
 import ReWire.Finite()
 import ReWire.Vectors (update,index,(!=))
-import Control.Monad.Identity
-import Control.Monad.State
 
 -- | state array 
 type A = Vec 5 (Vec 5 (W 64))
@@ -33,9 +31,6 @@ putD :: D -> StateT (A , C , D) Identity ()
 putD d = do
            (a , c , _) <- get
            put (a , c , d)
-
--- map2d :: (a -> b) -> Vec n (Vec m a) -> Vec n (Vec m b)
--- map2d f = ReWire.Vectors.map (ReWire.Vectors.map f)
 
 rdArr :: Vec n1 (Vec n2 a) -> (Finite n1 , Finite n2) -> a
 rdArr a (x , y) = index (index a x) y

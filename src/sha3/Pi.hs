@@ -2,41 +2,45 @@
 module Sha3.Pi(pi) where
 
 import Prelude hiding (pi)
-import ReWire hiding (StateT , put , get , Identity)
-import ReWire.Bits (lit)
+import ReWire 
 import ReWire.FiniteComp     as FC
-import ReWire.Vectors        as RWV
+import ReWire.Vectors (index , generate)
 
-import Control.Monad.Identity
-import Control.Monad.State
--- ^^ ReWire doesn't define runStateT. It can and should, but doesn't.
+import Sha3.Layout (A)
 
-import Sha3.Layout (A, C, D)
-
-action :: A -> A
-action a = generate $ \ x ->
-             generate $ \ y ->
-                         index (index a (access x y)) x
+pi :: A -> A
+pi a = generate $ \ x ->
+           generate $ \ y ->
+                      index (index a (access x y)) x
    where
      access :: Finite 5 -> Finite 5 -> Finite 5
      access x y = x FC.+ (3 FC.* y)
 
-piM :: StateT (A , C , D) Identity ()
-piM = do
-         (a , c , d) <- get
-         put (action a , c , d)
+---- Kruft below.
 
-pi :: A -> A
-pi a = fst3 (snd (runIdentity $ runStateT piM (a , c0 , d0)))
-  where
-    fst3 :: (a , b , c) -> a
-    fst3 (x , _ , _) = x
+-- | Not sure why I did this this way the first time around.
+-- |
+-- import Control.Monad.Identity
+-- import Control.Monad.State
+-- ^^ ReWire doesn't define runStateT. It can and should, but doesn't.
 
-    -- | theta should be independent of these initial values.
-    c0 :: C
-    c0 = fromList [ lit 0x0 , lit 0x0 , lit 0x0 , lit 0x0 , lit 0x0 ]
-    d0 :: D
-    d0 = fromList [ lit 0x00123456 , lit 0x00123456 , lit 0x00123456 , lit 0x00123456 , lit 0x00123456 ]
+
+-- piM :: StateT (A , C , D) Identity ()
+-- piM = do
+--          (a , c , d) <- get
+--          put (pi a , c , d)
+--
+-- pi :: A -> A
+-- pi a = fst3 (snd (runIdentity $ runStateT piM (a , c0 , d0)))
+--   where
+--     fst3 :: (a , b , c) -> a
+--     fst3 (x , _ , _) = x
+
+--     -- | theta should be independent of these initial values.
+--     c0 :: C
+--     c0 = fromList [ lit 0x0 , lit 0x0 , lit 0x0 , lit 0x0 , lit 0x0 ]
+--     d0 :: D
+--     d0 = fromList [ lit 0x00123456 , lit 0x00123456 , lit 0x00123456 , lit 0x00123456 , lit 0x00123456 ]
 
 
 {-

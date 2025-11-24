@@ -16,13 +16,16 @@ import ReWire.Vectors        as RWV
 
 import ReWire hiding (ReacT,Identity,signal,lift, get, put, StateT)
 
-import Sha3.Layout (A , C , D , readA , readC, writeC , putD)
+import Sha3.Layout (A , C , D , readA , readC, writeC , putD , mkA)
 import Sha3.Theta(theta)
 import Sha3.Rho(rho)
 import Sha3.Iota(iota)
 import Sha3.Pi(pi)
 import Sha3.Chi(chi)
 import Sha3.Rnd(rnd)
+
+mkA :: [[W 64]] -> A
+mkA ls = fromList $ Prelude.map fromList ls
 
 test :: (A -> A) -> FilePath -> IO (Maybe [Bool])
 test f file = do
@@ -32,9 +35,7 @@ test f file = do
       Just tb -> return $ Just (Prelude.map (\ (a,a') -> f a Prelude.== a') tb)
       Nothing -> return $ Nothing
 
-mkA :: [[W 64]] -> A
-mkA ls = fromList $ Prelude.map fromList ls
-
+-- ugly
 conv :: ([[Integer]], [[Integer]]) -> (A, A)
 conv (l1,l2) = (mkA $ Prelude.map (Prelude.map lit) l1 , mkA $ Prelude.map (Prelude.map lit) l2)
 

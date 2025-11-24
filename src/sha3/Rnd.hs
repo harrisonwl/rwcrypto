@@ -3,9 +3,6 @@ module Sha3.Rnd (rnd) where
 
 import Prelude hiding ((^) , (++) , pi)
 import ReWire
--- import ReWire.Bits
---import ReWire.Finite
--- import ReWire.Vectors    
 
 import Sha3.Layout (A)
 

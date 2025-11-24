@@ -21,9 +21,10 @@ rotationConstants = fromList [row0 , row1 , row2 , row3 , row4]
     row3 = fromList [ lit 28 , lit 55 , lit 25 , lit 21 , lit 56 ]
     row4 = fromList [ lit 27 , lit 20 , lit 39 , lit 8  , lit 14 ]
 
+-- | D'Oh!!!
+-- | Got bit *again* by the order of operations in rotR and rotL.
 -- foo :: W 64
 -- foo =  (lit 3) `rR` (lit 0x94eeea8b1f2ada84)
--- -- | D'Oh!!!
 -- rR :: KnownNat m => W m -> W m -> W m
 -- rR n w = (w >>. n) .|. (w <<. (lit (len w) ReWire.Bits.- n))
 
