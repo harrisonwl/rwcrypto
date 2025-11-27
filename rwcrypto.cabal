@@ -45,6 +45,7 @@ library
       Salsa20.Test_QuarterRound
       Salsa20.Test_RowRound
   other-modules:
+      Round1
       Paths_rwcrypto
   autogen-modules:
       Paths_rwcrypto

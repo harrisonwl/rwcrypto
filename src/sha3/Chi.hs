@@ -3,11 +3,11 @@
 {-# OPTIONS_GHC -fplugin GHC.TypeLits.Normalise #-}
 module Sha3.Chi(chi) where
 
-import Prelude hiding ((^))
+import Prelude hiding ((^) , (+))
 import ReWire
-import ReWire.Bits
+import ReWire.Bits hiding ((+))
 import ReWire.Finite
-import ReWire.FiniteComp     as FC
+import ReWire.FiniteComp ((+))
 import ReWire.Vectors        as RWV
 
 import Sha3.Layout (A)
@@ -17,7 +17,7 @@ rd a x y = index (index a x) y
 
 action :: A -> Finite 5 -> Finite 5 -> W 64
 action a x y = (rd a x y) ^
-                   ( (bnot $ rd a (x FC.+ finite 1) y) .&. (rd a (x FC.+ finite 2) y) )
+                   ( (bnot $ rd a (x + finite 1) y) .&. (rd a (x + finite 2) y) )
 
 chi :: A -> A
 chi a = generate $ \ x ->

@@ -1,9 +1,12 @@
 {-# LANGUAGE DataKinds #-}
 module Sha3.Pi(pi) where
 
-import Prelude hiding (pi)
+import Prelude hiding (pi, (+) , (*))
 import ReWire 
-import ReWire.FiniteComp     as FC
+-- import ReWire.Bits hiding ((+))
+import ReWire.Finite
+import ReWire.FiniteComp ((+),(*))
+--import ReWire.FiniteComp     as FC
 import ReWire.Vectors (index , generate)
 
 import Sha3.Layout (A)
@@ -12,9 +15,9 @@ pi :: A -> A
 pi a = generate $ \ x ->
            generate $ \ y ->
                       index (index a (access x y)) x
-   where
-     access :: Finite 5 -> Finite 5 -> Finite 5
-     access x y = x FC.+ (3 FC.* y)
+
+access :: Finite 5 -> Finite 5 -> Finite 5
+access x y = x + (3 * y)
 
 ---- Kruft below.
 

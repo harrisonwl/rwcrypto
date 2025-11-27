@@ -26,7 +26,7 @@ where the first component of each pair is an input state (`A`) and the second is
  battery and ReWire step operation `f`, that `f i == o`.
  * Each of the ReWire step operations and the round-function composition, `rnd`, tested correctly against 1000-case test 
  batteries. The call looks like:
-> λ> test theta "testvectors/theta1000.txt"
+> λ> test theta "src/sha3/testvectors/theta1000.txt"
 >    Just [True,<...snip...>,True]
 > λ> 
  

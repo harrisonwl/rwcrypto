@@ -16,7 +16,7 @@ import ReWire.Vectors        as RWV
 
 import ReWire hiding (ReacT,Identity,signal,lift, get, put, StateT)
 
-import Sha3.Layout (A , C , D , readA , readC, writeC , putD , mkA)
+import Sha3.Layout (A , C , D , readA , readC, writeC , putD)
 import Sha3.Theta(theta)
 import Sha3.Rho(rho)
 import Sha3.Iota(iota)

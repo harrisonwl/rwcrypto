@@ -1,0 +1,171 @@
+{-# LANGUAGE DataKinds #-}
+
+import Prelude hiding ((^), (+), (==), (&&) , (++))
+import ReWire hiding (error)
+import ReWire.Bits
+import ReWire.Vectors
+
+import Blake2b.Reference hiding (readH , _F , _BLAKE2b)
+
+type Mealy i s o = ReacT i o (Storage s)
+
+-- |
+-- | These are the staging operators.
+-- |
+
+{-# INLINE stage_ #-}
+stage_ :: Storage RegFile () -> Mealy (Inp (W 64, W 64 , W 64 , W 64)) RegFile (Maybe W64x8) (Inp (W 64, W 64 , W 64 , W 64))
+stage_ x        = do
+                   lift x
+                   i' <- signal Nothing
+                   return i' 
+
+{-# INLINE _stage #-}
+_stage :: Storage RegFile () -> Mealy (Inp (W 64, W 64 , W 64 , W 64)) RegFile (Maybe W64x8) ()
+_stage x        = do
+                   lift x
+                   signal Nothing
+                   return ()
+
+
+_F :: W 128 -> Bit -> Mealy (Inp (W 64, W 64 , W 64 , W 64)) RegFile (Maybe W64x8) ()
+_F t f = do
+           _stage $ do
+             init_local_work_vector
+             v12 <== do { w <- readReg v12 ; return $ w ^ lowword t }
+             v13 <== do { w <- readReg v13 ; return $ w ^ highword t }
+             if f then
+                    do
+                      v14 <== do { w <- readReg v14 ; return $ w ^ lit 0xffffffffffffffff }
+                  else
+                    return ()
+           _stage cryptographic_mixing
+           _stage xor_two_halves
+  where
+    init_local_work_vector :: Storage RegFile ()
+    init_local_work_vector = do
+                     (readReg h0 >>= setReg v0)
+                     (readReg h1 >>= setReg v1)
+                     (readReg h2 >>= setReg v2)
+                     (readReg h3 >>= setReg v3)
+                     (readReg h4 >>= setReg v4)
+                     (readReg h5 >>= setReg v5)
+                     (readReg h6 >>= setReg v6)
+                     (readReg h7 >>= setReg v7)
+                     setReg v8 iv0
+                     setReg v9 iv1
+                     setReg v10 iv2
+                     setReg v11 iv3
+                     setReg v12 iv4
+                     setReg v13 iv5
+                     setReg v14 iv6
+                     setReg v15 iv7
+
+    xor_two_halves :: Storage RegFile ()
+    xor_two_halves = do
+                   xor3 h0 v0 v8  >>= setReg h0
+                   xor3 h1 v1 v9  >>= setReg h1
+                   xor3 h2 v2 v10 >>= setReg h2
+                   xor3 h3 v3 v11 >>= setReg h3
+                   xor3 h4 v4 v12 >>= setReg h4
+                   xor3 h5 v5 v13 >>= setReg h5
+                   xor3 h6 v6 v14 >>= setReg h6
+                   xor3 h7 v7 v15 >>= setReg h7
+                     where
+                       xor3 :: Reg -> Reg -> Reg -> Storage RegFile (W 64)
+                       xor3 r1 r2 r3 = do
+                         w1 <- readReg r1
+                         w2 <- readReg r2
+                         w3 <- readReg r3
+                         return $ w1 ^ w2 ^ w3
+    
+    lowword :: W 128 -> W 64
+    lowword w = slice (Proxy :: Proxy 64) w
+
+    highword :: W 128 -> W 64
+    highword w = rslice (Proxy :: Proxy 64) w
+
+readH :: Mealy (Inp (W 64, W 64 , W 64 , W 64)) RegFile (Maybe W64x8) W64x8
+readH = lift $ do
+  h0 <- readReg h0
+  h1 <- readReg h1
+  h2 <- readReg h2
+  h3 <- readReg h3
+  h4 <- readReg h4
+  h5 <- readReg h5
+  h6 <- readReg h6
+  h7 <- readReg h7
+  return (h0 , h1 , h2 , h3 , h4 , h5 , h6 , h7)
+
+-- |
+-- | This version is simplified assuming that dd==1 && kk==0
+-- |
+
+blake2b :: Inp (W 64, W 64 , W 64 , W 64) -> Mealy (Inp (W 64, W 64 , W 64 , W 64)) RegFile (Maybe W64x8) ()
+blake2b (Q0 (w0 , w1 , w2 , w3)) = do
+     i <- stage_ $ do
+                    setReg m0 w0
+                    setReg m1 w1
+                    setReg m2 w2
+                    setReg m3 w3
+     blake2b i
+blake2b (Q1 (w4 , w5 , w6 , w7)) = do
+     i <- stage_ $ do
+                    setReg m4 w4
+                    setReg m5 w5
+                    setReg m6 w6
+                    setReg m7 w7
+     blake2b i
+blake2b (Q2 (w8 , w9 , w10 , w11)) = do
+     i <- stage_ $ do
+                    setReg m8 w8
+                    setReg m9 w9
+                    setReg m10 w10
+                    setReg m11 w11
+     blake2b i
+blake2b (Q3 (w12 , w13 , w14 , w15)) = do
+     lift $ do
+       setReg m12 w12
+       setReg m13 w13
+       setReg m14 w14
+       setReg m15 w15
+     i <- signal Nothing
+     blake2b i
+blake2b (Args (ll_hi , ll_lo , kk , nn)) = do
+     v <-_BLAKE2b (ll_hi ++ ll_lo) kk nn
+     i <- signal (Just v)
+     blake2b i
+
+_BLAKE2b :: W 128 -> W 64 -> W 64 -> Mealy (Inp (W 64, W 64 , W 64 , W 64)) RegFile (Maybe W64x8) W64x8
+_BLAKE2b ll kk nn = do
+                     
+                     stage_ $ do
+                               setReg h0 iv0  -- Initialization Vector.
+                               setReg h1 iv1
+                               setReg h2 iv2
+                               setReg h3 iv3
+                               setReg h4 iv4
+                               setReg h5 iv5
+                               setReg h6 iv6
+                               setReg h7 iv7
+
+                            -- Parameter block p[0]
+                               v <-  do
+                                        h0 <- readReg h0
+                                        return $ h0 ^ lit 0x01010000 ^ (kk <<. lit 8) ^ nn
+                               setReg h0 v
+
+                     if kk == lit 0
+                       then
+                         _F ll True
+                       else
+                         _F (ll + bb) True
+
+                     readH
+
+type W64x4  = ( W 64 , W 64 , W 64 , W 64 )
+
+start :: ReacT (Inp W64x4) (Maybe W64x8) Identity ()
+start = extrude (signal Nothing >>= blake2b) regfile0
+--      ^^^^^^^                              ^^^^^^^^
+--      provides the initial store 
