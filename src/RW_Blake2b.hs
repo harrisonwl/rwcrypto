@@ -5,7 +5,7 @@ import ReWire hiding (error)
 import ReWire.Bits
 import ReWire.Vectors
 
-import Blake2b.Reference hiding (readH , _F , _BLAKE2b)
+import Blake2b.Reference hiding (_F , _BLAKE2b)
 
 type Mealy i s o = ReacT i o (Storage s)
 
@@ -27,6 +27,7 @@ _stage x        = do
                    signal Nothing
                    return ()
 
+data Inp a       = Start a | DC a | Q0 a | Q1 a | Q2 a | Q3 a | Args a 
 
 _F :: W 128 -> Bit -> Mealy (Inp (W 64, W 64 , W 64 , W 64)) RegFile (Maybe W64x8) ()
 _F t f = do
@@ -84,18 +85,6 @@ _F t f = do
 
     highword :: W 128 -> W 64
     highword w = rslice (Proxy :: Proxy 64) w
-
-readH :: Mealy (Inp (W 64, W 64 , W 64 , W 64)) RegFile (Maybe W64x8) W64x8
-readH = lift $ do
-  h0 <- readReg h0
-  h1 <- readReg h1
-  h2 <- readReg h2
-  h3 <- readReg h3
-  h4 <- readReg h4
-  h5 <- readReg h5
-  h6 <- readReg h6
-  h7 <- readReg h7
-  return (h0 , h1 , h2 , h3 , h4 , h5 , h6 , h7)
 
 -- |
 -- | This version is simplified assuming that dd==1 && kk==0
@@ -161,7 +150,7 @@ _BLAKE2b ll kk nn = do
                        else
                          _F (ll + bb) True
 
-                     readH
+                     lift readH
 
 type W64x4  = ( W 64 , W 64 , W 64 , W 64 )
 

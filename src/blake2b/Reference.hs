@@ -22,7 +22,6 @@ update :: KnownNat n => Vec n a -> Finite n -> a -> Vec n a
 update v i x = generate (\ j -> if j FC.== i then x else index v j)
 
 type Storage s   = StateT s Identity
-data Inp a       = Start a | DC a | Q0 a | Q1 a | Q2 a | Q3 a | Args a 
 
 type RegFile = Vec 40 (W 64)
 type Reg     = Finite 40
@@ -150,7 +149,7 @@ iv5 = lit 0x9b05688c2b3e6c1f
 iv6 = lit 0x1f83d9abfb41bd6b
 iv7 = lit 0x5be0cd19137e2179
                      
--- These are permutations. I changed the name to make it conform to the
+-- Reg16 are permutations. I changed the name to make it conform to the
 -- RFC7693 text.
 -- 
 type Reg16 = (Reg , Reg , Reg , Reg , Reg , Reg , Reg , Reg , Reg , Reg , Reg , Reg , Reg , Reg , Reg , Reg)
@@ -326,19 +325,3 @@ _BLAKE2b ll kk nn d0 = do
                          _F (ll + bb) True
 
                      readH
-
-
--- (
---   Reg(..) ,
---   RegFile(..) ,
---   trReg ,
---   readReg , setReg , (<==) , regfile0 ,
---   Storage , Inp(..) ,
---   _R1 , _R2 , _R3 , _R4 , _G ,
---   iv0 , iv1 , iv2 , iv3 , iv4 , iv5 , iv6 , iv7 ,
---   Reg16 ,
---   sigma0 , sigma1 , sigma2 , sigma3 , sigma4 ,
---   sigma5 , sigma6 , sigma7 , sigma8 , sigma9 ,
---   message_permutation , cryptographic_mixing ,
---   W64x8 , W64x16 , initM , readH
---                         ) where

@@ -46,6 +46,7 @@ library
       Salsa20.Test_RowRound
   other-modules:
       Round1
+      RW_Blake2b
       Paths_rwcrypto
   autogen-modules:
       Paths_rwcrypto
