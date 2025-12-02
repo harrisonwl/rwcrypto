@@ -209,10 +209,9 @@ _F t f = do
                   return ()
            cryptographic_mixing
            xor_two_halves
-  where
 
-     init_local_work_vector :: Storage RegFile ()
-     init_local_work_vector = do
+init_local_work_vector :: Storage RegFile ()
+init_local_work_vector = do
                      v0  <== readReg h0
                      v1  <== readReg h1
                      v2  <== readReg h2
@@ -230,8 +229,8 @@ _F t f = do
                      v14 <== return iv6
                      v15 <== return iv7
 
-     xor_two_halves :: Storage RegFile ()
-     xor_two_halves = do
+xor_two_halves :: Storage RegFile ()
+xor_two_halves = do
                    h0 <== xor3 h0 v0 v8
                    h1 <== xor3 h1 v1 v9
                    h2 <== xor3 h2 v2 v10
@@ -248,11 +247,17 @@ _F t f = do
                          w3 <- readReg r3
                          return $ w1 ^ w2 ^ w3
     
-     lowword :: W 128 -> W 64
-     lowword w = slice (Proxy :: Proxy 64) w
+lowword :: W 128 -> W 64
+lowword w = take w
 
-     highword :: W 128 -> W 64
-     highword w = rslice (Proxy :: Proxy 64) w
+highword :: W 128 -> W 64
+highword w = drop w
+
+     -- lowword :: W 128 -> W 64
+     -- lowword w = slice (Proxy :: Proxy 64) w
+
+     -- highword :: W 128 -> W 64
+     -- highword w = rslice (Proxy :: Proxy 64) w
 
 type W64x8  = ( W 64 , W 64 , W 64 , W 64 , W 64 , W 64 , W 64 , W 64 )
 type W64x16 = ( W 64 , W 64 , W 64 , W 64 , W 64 , W 64 , W 64 , W 64
