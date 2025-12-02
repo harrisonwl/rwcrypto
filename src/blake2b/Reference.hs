@@ -253,12 +253,6 @@ lowword w = take w
 highword :: W 128 -> W 64
 highword w = drop w
 
-     -- lowword :: W 128 -> W 64
-     -- lowword w = slice (Proxy :: Proxy 64) w
-
-     -- highword :: W 128 -> W 64
-     -- highword w = rslice (Proxy :: Proxy 64) w
-
 type W64x8  = ( W 64 , W 64 , W 64 , W 64 , W 64 , W 64 , W 64 , W 64 )
 type W64x16 = ( W 64 , W 64 , W 64 , W 64 , W 64 , W 64 , W 64 , W 64
               , W 64 , W 64 , W 64 , W 64 , W 64 , W 64 , W 64 , W 64 )

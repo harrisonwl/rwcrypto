@@ -42,6 +42,52 @@ _F t f = do
                     return ()
            _stage cryptographic_mixing
            _stage xor_two_halves
+{-
+  where
+    init_local_work_vector :: Storage RegFile ()
+    init_local_work_vector = do
+                     (readReg h0 >>= setReg v0)
+                     (readReg h1 >>= setReg v1)
+                     (readReg h2 >>= setReg v2)
+                     (readReg h3 >>= setReg v3)
+                     (readReg h4 >>= setReg v4)
+                     (readReg h5 >>= setReg v5)
+                     (readReg h6 >>= setReg v6)
+                     (readReg h7 >>= setReg v7)
+                     setReg v8 iv0
+                     setReg v9 iv1
+                     setReg v10 iv2
+                     setReg v11 iv3
+                     setReg v12 iv4
+                     setReg v13 iv5
+                     setReg v14 iv6
+                     setReg v15 iv7
+
+    xor_two_halves :: Storage RegFile ()
+    xor_two_halves = do
+                   xor3 h0 v0 v8  >>= setReg h0
+                   xor3 h1 v1 v9  >>= setReg h1
+                   xor3 h2 v2 v10 >>= setReg h2
+                   xor3 h3 v3 v11 >>= setReg h3
+                   xor3 h4 v4 v12 >>= setReg h4
+                   xor3 h5 v5 v13 >>= setReg h5
+                   xor3 h6 v6 v14 >>= setReg h6
+                   xor3 h7 v7 v15 >>= setReg h7
+                     where
+                       xor3 :: Reg -> Reg -> Reg -> Storage RegFile (W 64)
+                       xor3 r1 r2 r3 = do
+                         w1 <- readReg r1
+                         w2 <- readReg r2
+                         w3 <- readReg r3
+                         return $ w1 ^ w2 ^ w3
+    
+    lowword :: W 128 -> W 64
+    lowword w = slice (Proxy :: Proxy 64) w
+
+    highword :: W 128 -> W 64
+    highword w = rslice (Proxy :: Proxy 64) w
+-}
+
 
 -- |
 -- | This version is simplified assuming that dd==1 && kk==0
