@@ -7,6 +7,7 @@ module Sha3.Layout ( A , C , D
 
 import ReWire
 import ReWire.Finite()
+import qualified ReWire.FiniteComp as FC
 import ReWire.Vectors (index , (!=), generate)
 
 -- | state array 
@@ -19,7 +20,7 @@ type D = Vec 5 (W 64)
 -- | built-in rwPrimVecUpdate isn't fully implemented.
 -- |
 update :: KnownNat n => Vec n a -> Finite n -> a -> Vec n a
-update v i a = generate $ \ j -> if i==j then a else v `index` j
+update v i a = generate $ \ j -> if i FC.== j then a else v `index` j
 
 wrArr :: (KnownNat n1, KnownNat n2) =>
          Vec n1 (Vec n2 a) -> (Finite n1, Finite n2) -> a -> Vec n1 (Vec n2 a)

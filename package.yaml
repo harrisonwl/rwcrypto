@@ -47,6 +47,7 @@ ghc-options:
 library:
   source-dirs:
     - src
+    - src/blake2b
 #    - src/sha3
 #    - src/sha256
     # - src/salsa20

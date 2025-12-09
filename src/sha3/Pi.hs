@@ -5,8 +5,8 @@ import Prelude hiding (pi, (+) , (*))
 import ReWire 
 -- import ReWire.Bits hiding ((+))
 import ReWire.Finite
-import ReWire.FiniteComp ((+),(*))
---import ReWire.FiniteComp     as FC
+--import ReWire.FiniteComp ((+),(*))
+import ReWire.FiniteComp     as FC
 import ReWire.Vectors (index , generate)
 
 import Sha3.Layout (A)
@@ -17,7 +17,7 @@ pi a = generate $ \ x ->
                       index (index a (access x y)) x
 
 access :: Finite 5 -> Finite 5 -> Finite 5
-access x y = x + (3 * y)
+access x y = x FC.+ (finite 3 FC.* y)
 
 ---- Kruft below.
 

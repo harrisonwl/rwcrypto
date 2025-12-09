@@ -1,11 +1,12 @@
 {-# LANGUAGE DataKinds #-}
+-- module RW_Blake2b where
 
 import Prelude hiding ((^), (+), (==), (&&) , (++))
 import ReWire hiding (error)
 import ReWire.Bits
 import ReWire.Vectors
 
-import Blake2b.Reference hiding (_F , _BLAKE2b)
+import Reference.Blake2b hiding (_F , _BLAKE2b)
 
 type Mealy i s o = ReacT i o (Storage s)
 

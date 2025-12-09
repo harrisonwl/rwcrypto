@@ -1,5 +1,5 @@
 {-# LANGUAGE DataKinds #-}
-module Blake2b.Reference where
+module Reference.Blake2b where
 
 -- |
 -- | This reference semantics
