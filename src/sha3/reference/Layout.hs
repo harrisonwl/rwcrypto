@@ -1,6 +1,6 @@
 {-# LANGUAGE DataKinds #-}
 {-# OPTIONS_GHC -fplugin GHC.TypeLits.Normalise #-}
-module Sha3.Layout ( A , C , D
+module Reference.Layout ( A , C , D
                    , readA , readC , writeC , putA , putD , rdArr , wrArr
                    , (@@)
                    ) where

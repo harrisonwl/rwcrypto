@@ -1,13 +1,13 @@
 {-# LANGUAGE TypeOperators #-}
 {-# LANGUAGE DataKinds #-}
 {-# OPTIONS_GHC -fplugin GHC.TypeLits.Normalise #-}
-module Sha3.Rho(rho) where
+module Reference.Rho(rho) where
 
 import ReWire
 import ReWire.Bits           as B
 import ReWire.Vectors        as RWV
 
-import Sha3.Layout (A)
+import Reference.Layout (A)
 
 -- | I'm not sure these constants are correct.
 -- | This table is Table 2, page 13, modulo 64.

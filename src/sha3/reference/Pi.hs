@@ -1,5 +1,5 @@
 {-# LANGUAGE DataKinds #-}
-module Sha3.Pi(pi) where
+module Reference.Pi(pi) where
 
 import Prelude hiding (pi, (+) , (*))
 import ReWire 
@@ -9,7 +9,7 @@ import ReWire.Finite
 import ReWire.FiniteComp     as FC
 import ReWire.Vectors (index , generate)
 
-import Sha3.Layout (A)
+import Reference.Layout (A)
 
 pi :: A -> A
 pi a = generate $ \ x ->

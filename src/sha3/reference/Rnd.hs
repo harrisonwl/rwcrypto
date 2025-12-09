@@ -1,16 +1,16 @@
 {-# LANGUAGE DataKinds #-}
-module Sha3.Rnd (rnd) where
+module Reference.Rnd (rnd) where
 
 import Prelude hiding ((^) , (++) , pi)
 import ReWire
 
-import Sha3.Layout (A, putA)
+import Reference.Layout (A, putA)
 
-import Sha3.Theta(theta)
-import Sha3.Rho(rho)
-import Sha3.Iota(iota)
-import Sha3.Pi(pi)
-import Sha3.Chi(chi)
+import Reference.Theta(theta)
+import Reference.Rho(rho)
+import Reference.Iota(iota)
+import Reference.Pi(pi)
+import Reference.Chi(chi)
 
 rnd :: Finite 24 -> A -> A
 -- rnd ir a = pi a

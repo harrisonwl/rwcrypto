@@ -1,7 +1,7 @@
 {-# LANGUAGE TypeOperators #-}
 {-# LANGUAGE DataKinds #-}
 {-# OPTIONS_GHC -fplugin GHC.TypeLits.Normalise #-}
-module Sha3.Chi(chi) where
+module Reference.Chi(chi) where
 
 import Prelude hiding ((^) , (+))
 import ReWire
@@ -10,7 +10,7 @@ import ReWire.Finite
 import ReWire.FiniteComp ((+))
 import ReWire.Vectors        as RWV
 
-import Sha3.Layout (A)
+import Reference.Layout (A)
 
 rd :: A -> Finite 5 -> Finite 5 -> W 64
 rd a x y = index (index a x) y

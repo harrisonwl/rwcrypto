@@ -1,5 +1,5 @@
 {-# LANGUAGE DataKinds #-}
-module Sha3.Iota (iota, rc) where
+module Reference.Iota (iota, rc) where
 
 import Prelude hiding ((^) , (++))
 import ReWire
@@ -7,7 +7,7 @@ import ReWire.Bits
 import ReWire.Finite
 import ReWire.Vectors    
 
-import Sha3.Layout (A , wrArr, rdArr)
+import Reference.Layout (A , wrArr, rdArr)
 
 -- | These are the rounding constants (semi-)specified in
 -- | Algorithms 5, 6, and 7, pages 16-17, of FIPS 202.

@@ -1,6 +1,6 @@
 {-# LANGUAGE DataKinds #-}
 {-# OPTIONS_GHC -fplugin GHC.TypeLits.Normalise #-}
-module Sha3.Theta (theta) where
+module Reference.Theta (theta) where
 
 import Prelude hiding ((^))
 
@@ -9,7 +9,7 @@ import ReWire.Bits hiding ((@@))
 import ReWire.Finite
 import ReWire.Vectors (index, generate)
 
-import Sha3.Layout (A , C , D , (@@))
+import Reference.Layout (A , C , D , (@@))
 
 incF5 , decF5 :: Vec 5 (Finite 5)
 incF5 = fromList [ finite 1 , finite 2 , finite 3 , finite 4 , finite 0 ]

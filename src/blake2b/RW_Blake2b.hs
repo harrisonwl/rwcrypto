@@ -1,5 +1,5 @@
 {-# LANGUAGE DataKinds #-}
--- module RW_Blake2b where
+module RW_Blake2b where
 
 import Prelude hiding ((^), (+), (==), (&&) , (++))
 import ReWire hiding (error)

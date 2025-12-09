@@ -1,7 +1,7 @@
 {-# LANGUAGE TypeOperators #-}
 {-# LANGUAGE DataKinds #-}
 {-# OPTIONS_GHC -fplugin GHC.TypeLits.Normalise #-}
-module Sha3.Test where
+module Test.Test where
 
 import Text.Read (readMaybe)
 import System.IO (readFile)
@@ -16,13 +16,13 @@ import ReWire.Vectors        as RWV
 
 import ReWire hiding (ReacT,Identity,signal,lift, get, put, StateT)
 
-import Sha3.Layout (A , C , D , readA , readC, writeC , putD)
-import Sha3.Theta(theta)
-import Sha3.Rho(rho)
-import Sha3.Iota(iota)
-import Sha3.Pi(pi)
-import Sha3.Chi(chi)
-import Sha3.Rnd(rnd)
+import Reference.Layout (A , C , D , readA , readC, writeC , putD)
+import Reference.Theta(theta)
+import Reference.Rho(rho)
+import Reference.Iota(iota)
+import Reference.Pi(pi)
+import Reference.Chi(chi)
+import Reference.Rnd(rnd)
 
 mkA :: [[W 64]] -> A
 mkA ls = fromList $ Prelude.map fromList ls
