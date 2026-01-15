@@ -15,7 +15,7 @@ import Aes.ShiftRows (shiftrows)
 import Aes.MixColumns (mixColumns)
 
 -- | AES parameters for AES-256
--- Key Length (Nk words) | Block Size (Nb words) | Number of Rounds (Nr)
+--          Key Length (Nk words) | Block Size (Nb words) | Number of Rounds (Nr)
 -- -------------------------------------------------------------------------------
 -- AES-256 |          8           |           4           |        14
 -- -------------------------------------------------------------------------------

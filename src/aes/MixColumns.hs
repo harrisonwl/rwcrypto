@@ -11,10 +11,7 @@ import ReWire.FiniteComp     as FC
 import ReWire.Vectors hiding ((++))
 import ReWire.Interactive (dshow , hex , xshow)
 
-import Aes.AESBasic
-
--- type State  = Vec 4 (Vec 4 (W 8))
--- type Column = Vec 4 (W 8)
+import Aes.Basic(State , Column)
 
 -- | Multiplication by 2 in GF(2^8)
 -- This is equivalent to left shift by 1, with conditional XOR by 0x1B

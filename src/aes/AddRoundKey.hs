@@ -2,14 +2,10 @@
 module Aes.AddRoundKey (addRoundKey) where
 
 import Prelude (($))
-import ReWire
 import ReWire.Bits ((^))
-import ReWire.Vectors (index , generate)
+import ReWire.Vectors (generate)
 
-import Aes.AESBasic(State , RoundKey)
-
-lkup :: Vec 4 (Vec 4 (W 8)) -> (Finite 4 , Finite 4) -> W 8
-lkup s (i , j) = (s `index` i) `index` j
+import Aes.Basic(State , RoundKey , lkup)
 
 addRoundKey :: RoundKey -> State -> State
 addRoundKey rk s = generate $ \ i ->

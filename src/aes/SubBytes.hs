@@ -9,7 +9,7 @@ import ReWire.Vectors (index , drop , take , generate)
 
 import ReWire.Interactive (dshow , hex , xshow)
 
-import Aes.AESBasic(State , Column)
+import Aes.Basic(State , Column , toByte4 , toW32)
 
 type SBox   = Vec 0x10 (Vec 0x10 (W 8))
 type Index  = Finite 0x10
@@ -19,9 +19,13 @@ subbytes s = generate $ \ i ->
              generate $ \ j -> let xij = (s `index` i) `index` j in
                                  sbox xij
 
--- | This is used later in the key expansion routine.
-subword :: Vec 4 (W 8) -> Vec 4 (W 8)
-subword bytes4 = generate $ \ i -> sbox (bytes4 `index` i)
+subword :: W 32 -> W 32
+subword w32 = toW32 (sub4 (toByte4 w32))
+  where
+    -- | This is used later in the key expansion routine.
+    sub4 :: Vec 4 (W 8) -> Vec 4 (W 8)
+    sub4 bytes4 = generate $ \ i -> sbox (bytes4 `index` i)
+
   
 sbox :: W 8 -> W 8
 sbox w = lkup (mkix w)

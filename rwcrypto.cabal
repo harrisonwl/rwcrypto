@@ -50,7 +50,6 @@ library
       Round1
       Rounds
       RW_Pi
-      Test
       Paths_rwcrypto
   autogen-modules:
       Paths_rwcrypto
