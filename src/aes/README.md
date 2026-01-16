@@ -15,13 +15,13 @@ In the FIPS-197, the word size is 32 bits and the following constants are define
  * _Nr_ is the _number of rounds_.
 
 These parameters are defined by mode:
---           Nk   Nb   Nr   KeyExpansion(byte key[4*nk] , word w[nb*(nr+1)])
--- -------------------------------------------------------------------------
--- AES-128 |  4 |  4 | 10 | KeyExpansion(byte key[16] , word w[44])
--- -------------------------------------------------------------------------
--- AES-192 |  6 |  4 | 12 | KeyExpansion(byte key[24] , word w[52])
--- -------------------------------------------------------------------------
--- AES-256 |  8 |  4 | 14 | KeyExpansion(byte key[32] , word w[60])
+|         | Nk | Nb | Nr | KeyExpansion(byte key[4*nk] , word w[nb*(nr+1)])
+| -------------------------------------------------------------------------
+| AES-128 |  4 |  4 | 10 | KeyExpansion(byte key[16] , word w[44])
+| -------------------------------------------------------------------------
+| AES-192 |  6 |  4 | 12 | KeyExpansion(byte key[24] , word w[52])
+| -------------------------------------------------------------------------
+| AES-256 |  8 |  4 | 14 | KeyExpansion(byte key[32] , word w[60])
 
 The KeyExpansion pseudocode from Fig. 11, page 20, of FIPS.197 and defines the size of the _key_ and _key schedule_ parameters, _key_ and _w_, respectively, as in the fifth column above.
 
