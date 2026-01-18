@@ -1,5 +1,5 @@
 {-# LANGUAGE DataKinds #-}
-module Aes.Exec_KeyExpansion where
+module Aes.KeyExp.Reference256 where
 
 import Prelude as P hiding ((-) , (*) , (==) , (<) , (^) , (/) , head , tail , round)
 import ReWire hiding (put , get , signal , lift)
@@ -9,89 +9,18 @@ import ReWire.Finite
 import ReWire.FiniteComp as FC
 import Aes.ExtensionalSemantics
 
-import Aes.Basic(update , (!=) , (@@@) , toW32 , toByte4)
+import Aes.Basic({- update , -} (!=) , (@@@)  , toW32 {-, toByte4-})
 import Aes.SubBytes(subword)
 import Aes.RotWord(rotword)
 
-import ReWire.Interactive(Pretty , pretty , pp)
-import qualified Data.Vector.Sized                 as V
---import Debug.Trace
+import ReWire.Interactive({-Pretty ,-} pretty {- , pp-})
 
--- | This reflects the AES-256 type of KeyExpansion (^^^)
 type KeySchedule = Vec 60 (W 32)
 type Key         = Vec 32 (W 8) 
 
-data I a = KB a  
-         | Round
-         | Cont
-         | Read Integer -- just for instrumentation
-        -- | M128 | M192 | M256 -- modes
-
-instance Show (I a) where
-  show (KB _)   = "Key ?"
-  show Round    = "Round"
-  show Cont     = "Cont"
-  show (Read i) = "Read " P.++ show i
-
-instance Pretty (I a) where
-  pp (KB _)   = "Key ?"
-  pp Round    = "Round"
-  pp Cont     = "Cont"
-  pp (Read i) = "Read " P.++ show i
-
-
-------
--- Hardware Semantics
-------
-
-hdl :: I Key -> Re (I Key) (KeySchedule, W 6) (Maybe (W 32)) ()
-hdl (KB k)    = do
-                  lift $ put (initKS k ks0 , lit 8)
-                  i <- signal Nothing
-                  hdl i
-hdl Round     = do
-                  lift round
-                  i <- signal Nothing
-                  hdl i
-hdl Cont      = do
-                  i <- signal Nothing
-                  hdl i
-hdl (Read ix) = do
-                  (ks , _) <- lift get
-                  i <- signal (Just (ks `index` (finite ix)))
-                  hdl i
-                  
-exec :: Re (I i) s o () -> (I i, s, o) -> [I i] -> Stream (I i, s, o)
-exec x w is  = re_inf x w (istr is)
-
-  where
-
-    istr :: [I a] -> Stream (I a)
-    istr is = appendStr is (rep Cont)
-
-    appendStr :: [a] -> Stream a -> Stream a
-    appendStr [] str       = str
-    appendStr (a : as) str = a :< appendStr as str
-
--- |
--- | Main function for simulation.
--- |
-
--- run :: Integer -> IO ()
-run i = pretty $ P.map (\ (_ , _ , x) -> x) $ takeStr (P.length ins0 P.+ 1) (exec (hdl Cont) w0 ins0)
-
-  where
-
-     w0 :: (I Key , (KeySchedule , W 6) , Maybe (W 32))
-     w0 = (Cont , (ks0 , lit 7) , Nothing)
-
-     ins0 :: [I Key]
-     ins0 = mkcall k0 i -- Uses example from above (k0)
-
-mkcall :: a -> Integer -> [I a]
-mkcall k ix = [KB k] P.++ rounds P.++ [Read ix , Cont]
-   where
-     rounds = P.take 13 (repeat Round)
+---
+--- Intended to be the standard semantics for AES-256 key expansion.
+---
 
 ------
 -- Standard Semantics
@@ -172,14 +101,16 @@ initKS k = expand (lit 0) k .
 assign :: W 6 -> W 32 -> KeySchedule -> KeySchedule
 assign c w32 ks = ks != (toFinite c) $ w32
 
-expand :: ST (KeySchedule, W 6) ()
-expand = do
-            (ks , c ) <- get
-            let w32 = body c ks
-            put (assign c w32 ks , c RB.+ lit 1)
-
 round :: ST (KeySchedule, W 6) ()
 round = expand >> expand >> expand >> expand
+
+  where
+    
+    expand :: ST (KeySchedule, W 6) ()
+    expand = do
+               (ks , c ) <- get
+               let w32 = body c ks
+               put (assign c w32 ks , c RB.+ lit 1)
 
 body :: W 6 -> KeySchedule -> W 32
 body i w = let
@@ -220,4 +151,3 @@ rcon i = table5 @@@ (i RB.- lit 1)
                 fromList [ lit 0x1b, lit 0x00, lit 0x00, lit 0x00],
                 fromList [ lit 0x36, lit 0x00, lit 0x00, lit 0x00]
                 ]
-

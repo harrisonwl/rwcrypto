@@ -1,0 +1,54 @@
+module KeyExpansion256 where
+
+//           Key Length (Nk words) | Block Size (Nb words) | Number of Rounds (Nr)
+// -----------------------------------------------------------------------------
+//  AES-128 |          4           |           4           |        10
+// -----------------------------------------------------------------------------
+//  AES-192 |          6           |           4           |        12
+// -----------------------------------------------------------------------------
+//  AES-256 |          8           |           4           |        14
+
+type Nk = 8
+type Nr = 15
+type Nb = 4
+
+SubWord : [4]GF28 -> [4]GF28
+SubWord [a0, a1, a2, a3] = [ SBox a0, SBox a1, SBox a2, SBox a3 ]
+
+keyExpansion : [32 * Nk] -> [Nr+1]RoundKey
+keyExpansion key = keys
+  where
+    // Lines 2-6: The first `Nk` words of the expanded key are the key itself
+    seed : [Nk][4]GF28
+    seed = split (split key)
+
+    // Lines 7-16: A loop to recursively generate the key stream
+    ws : [inf][4]GF28
+    ws = seed # [ nextWord i w_1 w_nk
+       | i    <- [ `Nk ... ]
+       | w_1  <- drop`{Nk-1} ws
+       | w_nk <- ws
+       ]
+
+    // Generate a single word `w_i` in the key stream.
+    // Each word `w_i` is a function of the previous word `w_{i-1}`
+    // and the word `Nk` positions earlier `w_{i-Nk}`.
+    nextWord : [8] ->[4]GF28 -> [4]GF28 -> [4]GF28
+    nextWord i w_1 w_nk = w_i where
+      // Lines 8 - 13: Derive the mask `temp`.
+      temp =
+        // If `i` is a multiple of `Nk`:
+        if i % `Nk == 0 then
+          SubWord (RotWord w_1) ^ Rcon (i / `Nk)
+        // For AES-256 (Nk == 8), if `i + 4` is a multiple of 8:
+        else if (`Nk > 6) && (i % `Nk == 4) then
+          SubWord w_1
+        // For all other cases:
+        else w_1
+
+      // Line 14: Apply the mask to the `i-Nk`th word to get the `i`th word.
+      w_i = w_nk ^ temp
+
+    // Line 17: Return the resulting key stream
+    // This breaks the stream into correctly-shaped words
+    keys = take `{Nr+1} [ transpose g | g <- split ws ]

@@ -1,0 +1,22 @@
+module Testing where
+
+import GF28
+import Specification
+
+randKeys : [10] [256]
+randKeys = random zero
+
+randTexts : [10][128]
+randTexts = random zero
+
+key1 : [256]
+key1 = random (zero : [256])
+
+// https://csrc.nist.gov/CSRC/media/Projects/Cryptographic-Standards-and-Guidelines/documents/examples/AES_Core256.pdf
+
+keyex : [256]
+keyex = 0x603DEB1015CA71BE2B73AEF0857D77811F352C073B6108D72D9810A30914DFF4
+
+plaintext : [128]
+plaintext = 0x6BC1BEE22E409F96E93D7E117393172A
+

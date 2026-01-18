@@ -1,5 +1,5 @@
 {-# LANGUAGE DataKinds #-}
-module Aes.KeyExpansion where
+module Aes.KeyExp.KeyExpansion where
 
 import Prelude hiding ((-) , (*) , (+) , (==) , (<) , (++) , (^) , (/) , head , tail , round)
 import ReWire hiding (put , get , StateT , Identity)
