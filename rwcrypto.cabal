@@ -50,6 +50,20 @@ library
       Round1
       Rounds
       RW_Pi
+      AddRoundKey
+      AESTesting
+      Basic
+      Cipher
+      Cipher128
+      Cipher256
+      ExtensionalSemantics
+      Hacking
+      HackyCipher
+      MixColumns
+      RotWord
+      SemanticCSA
+      ShiftRows
+      SubBytes
       Paths_rwcrypto
   autogen-modules:
       Paths_rwcrypto
@@ -57,6 +71,7 @@ library
       src
       src/blake2b
       src/sha3
+      src/aes
   ghc-options: -Wall -Wcompat -Widentities -Wno-name-shadowing -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints
   build-depends:
       base ==4.20.*

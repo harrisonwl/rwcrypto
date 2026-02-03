@@ -8,7 +8,7 @@ import ReWire.Vectors (index, generate)
 import ReWire.Finite
 import ReWire.FiniteComp
 
-import Aes.AESBasic (State, RoundKey)
+import Aes.Basic (State, RoundKey)
 import Aes.AddRoundKey (addRoundKey)
 import Aes.SubBytes (subbytes)
 import Aes.ShiftRows (shiftrows)

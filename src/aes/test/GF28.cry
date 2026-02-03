@@ -97,3 +97,22 @@ inverse x = pow x 254
  * ```
  */
 property inverseCorrect x = inverse (inverse x) == x
+
+/*
+sboxTable : [256]GF28
+private sboxTable = [ transform (inverse b) | b <- [0 .. 255] ] where
+    // Equation 5.3.
+    transform b = add [b, (b >>> 4), (b >>> 5), (b >>> 6), (b >>> 7), c]
+    // The constant byte {01100011}.
+    c = 0x63
+
+/**
+ * SBox: A non-linear substitution table for AES.
+ * [FIPS-197u1] Section 5.1.1.
+ */
+SBox : GF28 -> GF28
+SBox b = sboxTable @ b
+
+type RoundKey = [4][4]GF28
+type KeySchedule = [Nr+1]RoundKey
+*/

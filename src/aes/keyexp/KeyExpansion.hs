@@ -1,6 +1,14 @@
 {-# LANGUAGE DataKinds #-}
 module Aes.KeyExp.KeyExpansion where
 
+--
+-- This is a working document that is superceded by
+-- Reference256 and Hardware356
+--
+-- It is basically kruft now.
+--
+
+
 import Prelude hiding ((-) , (*) , (+) , (==) , (<) , (++) , (^) , (/) , head , tail , round)
 import ReWire hiding (put , get , StateT , Identity)
 import ReWire.Bits as RB hiding ((<) , (*))

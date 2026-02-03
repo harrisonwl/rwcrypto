@@ -1,7 +1,7 @@
 {-# LANGUAGE DataKinds #-}
 module Aes.KeyExp.Reference256 where
 
-import Prelude as P hiding ((-) , (*) , (==) , (<) , (^) , (/) , head , tail , round)
+import Prelude as P hiding ((-) , (*) , (<) , (^) , (/) , head , tail , round)
 import ReWire hiding (put , get , signal , lift)
 import ReWire.Bits as RB hiding ((<) , (*))
 import ReWire.Vectors hiding (update , (!=))
@@ -9,34 +9,59 @@ import ReWire.Finite
 import ReWire.FiniteComp as FC
 import Aes.ExtensionalSemantics
 
-import Aes.Basic({- update , -} (!=) , (@@@)  , toW32 {-, toByte4-})
+import Aes.Basic((!=) , (@@@)  , toW32 )
 import Aes.SubBytes(subword)
 import Aes.RotWord(rotword)
-
-import ReWire.Interactive({-Pretty ,-} pretty {- , pp-})
-
-type KeySchedule = Vec 60 (W 32)
-type Key         = Vec 32 (W 8) 
 
 ---
 --- Intended to be the standard semantics for AES-256 key expansion.
 ---
 
-------
--- Standard Semantics
-------
+-- |
+-- | AES-256 instance
+-- | N.b., in Fig. 11, w[8] depends on w[7], then w[9] depends on w[8], etc., and,
+-- | consequently, this can't be written as a map, Finite 60 -> W 32. Or, in other words,
+-- | it is truly iterative.
+-- |
 
-go :: Integer -> IO ()
-go i = pretty $ fst $ runST (keyexpand i k0) (undefined, undefined)
+-- | This is for defining the KeyExpansion routine from Fig 11, page 20, of nist.fips.197.
+-- 
+--           Nk   Nb   Nr   KeyExpansion(byte key[4*nk] , word w[nb*(nr+1)])
+-- -------------------------------------------------------------------------
+-- AES-128 |  4 |  4 | 10 | KeyExpansion(byte key[16] , word w[44])
+-- -------------------------------------------------------------------------
+-- AES-192 |  6 |  4 | 12 | KeyExpansion(byte key[24] , word w[52])
+-- -------------------------------------------------------------------------
+-- AES-256 |  8 |  4 | 14 | KeyExpansion(byte key[32] , word w[60])
+
+-- |
+-- | N.b., we represent the type of key as (8 x W 32) rather than (32 x W 8)
+-- | It's way more sensible.
+-- |
+
+type KeySchedule = Vec 60 (W 32)
+type Key         = Vec 8 (W 32) 
+type RF          = (KeySchedule, W 6)
+
+-- | To sort that out, here are the types for the
+-- | various key sizes.
+-- -------------------------------------------------------
+-- AES-128 | word key[4] , word w[44] | 44 - 4 = 40
+-- -------------------------------------------------------
+-- AES-192 | word key[6] , word w[52] | 52 - 6 = 46
+-- -------------------------------------------------------
+-- AES-256 | word key[8] , word w[60] | 60 - 8 = 52
+-- -------------------------------------------------------
+
 
 -- |
 -- | Standard semantics for Key Expansion
 -- |
-keyexpand :: Integer -> Key -> ST (KeySchedule, W 6) (W 32)
+keyexpand :: Integer -> Key -> ST RF (W 32)
 keyexpand i k = do
-                  put (initKS k ks0 , lit 8)
-                  round
-                  round
+                  put (initKS k ks0 , lit 8) -- initKS performs 8 "expand"s
+                  round                      -- 13 "round"s perform 13*4 "expand"s
+                  round                      -- total expands = 8 + 13*4 = 60
                   round
                   round
                   round
@@ -50,22 +75,10 @@ keyexpand i k = do
                   round
                   rdKS (finite i)
 
-rdKS :: Finite n -> ST (Vec n w, s) w
+rdKS :: Finite 60 -> ST RF (W 32)
 rdKS i = do
             (ks , _) <- get
             return (ks `index` i)
-
--- From both nist.fips.197-upd1 (Appendix A3) and AES_Core256
-keyex :: W 256
-keyex = lit 0x603DEB1015CA71BE2B73AEF0857D77811F352C073B6108D72D9810A30914DFF4
-
--- k0 is keyex ^^^ split into bytes
-k0 :: Key
-k0 = fromList
-        [ lit 0x60 , lit 0x3d , lit 0xeb , lit 0x10 , lit 0x15 , lit 0xca , lit 0x71 , lit 0xbe
-        , lit 0x2b , lit 0x73 , lit 0xae , lit 0xf0 , lit 0x85 , lit 0x7d , lit 0x77 , lit 0x81
-        , lit 0x1f , lit 0x35 , lit 0x2c , lit 0x07 , lit 0x3b , lit 0x61 , lit 0x08 , lit 0xd7
-        , lit 0x2d , lit 0x98 , lit 0x10 , lit 0xa3 , lit 0x09 , lit 0x14 , lit 0xdf , lit 0xf4 ]
 
 ks0 :: KeySchedule
 ks0 = fromList
@@ -75,42 +88,42 @@ ks0 = fromList
         , lit 0 , lit 0 , lit 0 , lit 0 , lit 0 , lit 0 , lit 0 , lit 0 , lit 0 , lit 0
         , lit 0 , lit 0 , lit 0 , lit 0 , lit 0 , lit 0 , lit 0 , lit 0 , lit 0 , lit 0
         , lit 0 , lit 0 , lit 0 , lit 0 , lit 0 , lit 0 , lit 0 , lit 0 , lit 0 , lit 0 ]
+-- |
+-- | experimenting with Key = Vec 8 (W 32) instead of Vec 32 (W 8)
 
-initKS :: Key -> KeySchedule -> KeySchedule
-initKS k = expand (lit 0) k .
-             expand (lit 1) k .
-             expand (lit 2) k .
-             expand (lit 3) k .
-             expand (lit 4) k . 
-             expand (lit 5) k . 
-             expand (lit 6) k . 
-             expand (lit 7) k 
+initKS :: Vec 8 (W 32) -> KeySchedule -> KeySchedule
+initKS k = mv2ks (lit 0) k .
+           mv2ks (lit 1) k .
+           mv2ks (lit 2) k .
+           mv2ks (lit 3) k .
+           mv2ks (lit 4) k . 
+           mv2ks (lit 5) k . 
+           mv2ks (lit 6) k . 
+           mv2ks (lit 7) k 
    where
-     expand :: W 6 -> Vec 32 (W 8) -> Vec 60 (W 32) -> Vec 60 (W 32)
-     expand i k w = w != toFinite i $ merge k (toFinite i)
 
-     merge :: Vec 32 (W 8) -> Finite 32 -> W 32
-     merge key i = (key `index` i4) ReWire.Vectors.++ (key `index` i41) ReWire.Vectors.++ (key `index` i42) ReWire.Vectors.++ (key `index` i43)
-       where
-         i4 , i41 , i42 , i43 :: Finite 32
-         i4  = finite 4 * i
-         i41 = finite 4 * i FC.+ finite 1
-         i42 = finite 4 * i FC.+ finite 2
-         i43 = finite 4 * i FC.+ finite 3
+     mv2ks :: W 6 -> Vec 8 (W 32) -> Vec 60 (W 32) -> Vec 60 (W 32)
+     mv2ks i k w = w != toFinite i $ k `index` (toFinite i)
+
+--
 
 assign :: W 6 -> W 32 -> KeySchedule -> KeySchedule
 assign c w32 ks = ks != (toFinite c) $ w32
 
-round :: ST (KeySchedule, W 6) ()
-round = expand >> expand >> expand >> expand
+round :: ST RF ()
+round = do
+           rf <- get
+           put (rnd rf)
 
+-- |
+-- | Purely functional version of round.
+-- | N.b., it "unrolls" the loop 4 times each.
+-- |
+rnd :: (KeySchedule, W 6) -> (KeySchedule, W 6)
+rnd = expand . expand . expand . expand
   where
-    
-    expand :: ST (KeySchedule, W 6) ()
-    expand = do
-               (ks , c ) <- get
-               let w32 = body c ks
-               put (assign c w32 ks , c RB.+ lit 1)
+    expand :: (KeySchedule, W 6) -> (KeySchedule, W 6)
+    expand (ks , c) = (assign c (body c ks) ks , c RB.+ lit 1)
 
 body :: W 6 -> KeySchedule -> W 32
 body i w = let
@@ -130,9 +143,6 @@ body i w = let
            in
                wi8 ^ temp
 
-w0 :: KeySchedule
-w0 = initKS k0 ks0
-
 rcon :: W 6 -> Vec 4 (W 8)
 rcon i = table5 @@@ (i RB.- lit 1)
   where
@@ -151,3 +161,47 @@ rcon i = table5 @@@ (i RB.- lit 1)
                 fromList [ lit 0x1b, lit 0x00, lit 0x00, lit 0x00],
                 fromList [ lit 0x36, lit 0x00, lit 0x00, lit 0x00]
                 ]
+
+
+{-
+initKS :: Key -> KeySchedule -> KeySchedule
+initKS k = expand (lit 0) k .
+           expand (lit 1) k .
+           expand (lit 2) k .
+           expand (lit 3) k .
+           expand (lit 4) k . 
+           expand (lit 5) k . 
+           expand (lit 6) k . 
+           expand (lit 7) k 
+
+   where
+
+     expand :: W 6 -> Vec 32 (W 8) -> Vec 60 (W 32) -> Vec 60 (W 32)
+     expand i k w = w != toFinite i $ merge k (toFinite i)
+
+     merge :: Vec 32 (W 8) -> Finite 32 -> W 32
+     merge k i = (k `index` i4) ReWire.Vectors.++ (k `index` i41) ReWire.Vectors.++ (k `index` i42) ReWire.Vectors.++ (k `index` i43)
+       where
+         i4 , i41 , i42 , i43 :: Finite 32
+         i4  = finite 4 * i
+         i41 = finite 4 * i FC.+ finite 1
+         i42 = finite 4 * i FC.+ finite 2
+         i43 = finite 4 * i FC.+ finite 3
+-}
+
+-- boost :: ST RF a -> ST (Key , KeySchedule, W 6) a
+-- boost (ST f) = ST $ \ (_ , ks , c) ->
+--                           let
+--                             (a , (ks' , c')) = f (ks , c)
+--                           in
+--                             (a , (k0 , ks' , c'))
+
+-- expand >> expand >> expand >> expand   
+
+  -- where
+    
+  --   expand :: ST RF ()
+  --   expand = do
+  --              (ks , c ) <- get
+  --              let w32 = body c ks
+  --              put (assign c w32 ks , c RB.+ lit 1)

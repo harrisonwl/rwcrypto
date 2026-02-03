@@ -1,5 +1,10 @@
 module KeyExpansion256 where
 
+// this file is a catch all for
+// necessary subsidiary definitions
+import GF28
+import Specification
+
 //           Key Length (Nk words) | Block Size (Nb words) | Number of Rounds (Nr)
 // -----------------------------------------------------------------------------
 //  AES-128 |          4           |           4           |        10
@@ -14,6 +19,9 @@ type Nb = 4
 
 SubWord : [4]GF28 -> [4]GF28
 SubWord [a0, a1, a2, a3] = [ SBox a0, SBox a1, SBox a2, SBox a3 ]
+
+keyex : [32 * Nk]
+keyex = 0x603DEB1015CA71BE2B73AEF0857D77811F352C073B6108D72D9810A30914DFF4
 
 keyExpansion : [32 * Nk] -> [Nr+1]RoundKey
 keyExpansion key = keys
