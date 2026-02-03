@@ -103,7 +103,7 @@ tuple2vec (w0 , w1 , w2 , w3 , w4 , w5 , w6 , w7)
                   = fromList [w0 , w1 , w2 , w3 , w4 , w5 , w6 , w7]
 
 -- | this encodes a calling protocol for the hdl hardware semantics
-mkcalls :: Key -> [I (W 32)]
+mkcalls :: Vec 8 (W 32) -> [I (W 32)]
 mkcalls k   = [ KB $ k `index` finite 0
               , KB $ k `index` finite 1
               , KB $ k `index` finite 2
