@@ -102,19 +102,8 @@ tuple2vec :: (W 32 , W 32 , W 32 , W 32 , W 32 , W 32 , W 32 , W 32) -> Vec 8 (W
 tuple2vec (w0 , w1 , w2 , w3 , w4 , w5 , w6 , w7)
                   = fromList [w0 , w1 , w2 , w3 , w4 , w5 , w6 , w7]
 
-  -- w0 ReWire.Vectors.++ (w1 ReWire.Vectors.++ (w2 ReWire.Vectors.++ (w3 ReWire.Vectors.++ (w4 ReWire.Vectors.++ (w5 ReWire.Vectors.++ w6 ReWire.Vectors.++ w7)))))
-  
-
-
-
-{-
-runkats = 
-  where
-    mkats = P.map (\ (k , ks) -> (
--}
-
 -- | this encodes a calling protocol for the hdl hardware semantics
-mkcalls :: Vec 8 (W 32) -> [I (W 32)]
+mkcalls :: Key -> [I (W 32)]
 mkcalls k   = [ KB $ k `index` finite 0
               , KB $ k `index` finite 1
               , KB $ k `index` finite 2
