@@ -1,5 +1,10 @@
 {-# LANGUAGE DataKinds #-}
-module Aes.KeyExp.Reference256 where
+module Aes.KeyExp.Reference256 ( keyexpand
+                               , keyexpansion
+                               , ks0
+                               , rnd
+                               , RF )
+   where
 
 import Prelude as P hiding ((-) , (*) , (<) , (^) , (/) , head , tail , round)
 import ReWire hiding (put , get , signal , lift)
@@ -9,7 +14,7 @@ import ReWire.Finite
 import ReWire.FiniteComp as FC
 import Aes.ExtensionalSemantics
 
-import Aes.Basic((!=) , (@@@)  , toW32 )
+import Aes.Basic(Key , KeySchedule , (!=) , (@@@)  , toW32 , splitkey)
 import Aes.SubBytes(subword)
 import Aes.RotWord(rotword)
 
@@ -34,13 +39,6 @@ import Aes.RotWord(rotword)
 -- -------------------------------------------------------------------------
 -- AES-256 |  8 |  4 | 14 | KeyExpansion(byte key[32] , word w[60])
 
--- |
--- | N.b., we represent the type of key as (8 x W 32) rather than (32 x W 8)
--- | It's way more sensible.
--- |
-
-type KeySchedule = Vec 60 (W 32)
-type Key         = Vec 8 (W 32) 
 type RF          = (KeySchedule, W 6)
 
 -- | To sort that out, here are the types for the
@@ -75,6 +73,29 @@ keyexpand i k = do
                   round
                   rdKS (finite i)
 
+keyexpansion :: Key -> KeySchedule
+keyexpansion k = fst $ runST expands (ks0 , lit 8)
+  where
+    expands =   do
+                  put (initKS k ks0 , lit 8) -- initKS performs 8 "expand"s
+                  round                      -- 13 "round"s perform 13*4 "expand"s
+                  round                      -- total expands = 8 + 13*4 = 60
+                  round
+                  round
+                  round
+                  round
+                  round
+                  round
+                  round
+                  round
+                  round
+                  round
+                  round
+                  do
+                    (ks,_) <- get
+                    return ks
+
+
 rdKS :: Finite 60 -> ST RF (W 32)
 rdKS i = do
             (ks , _) <- get
@@ -91,16 +112,19 @@ ks0 = fromList
 -- |
 -- | experimenting with Key = Vec 8 (W 32) instead of Vec 32 (W 8)
 
-initKS :: Vec 8 (W 32) -> KeySchedule -> KeySchedule
-initKS k = mv2ks (lit 0) k .
-           mv2ks (lit 1) k .
-           mv2ks (lit 2) k .
-           mv2ks (lit 3) k .
-           mv2ks (lit 4) k . 
-           mv2ks (lit 5) k . 
-           mv2ks (lit 6) k . 
-           mv2ks (lit 7) k 
+initKS :: Key -> KeySchedule -> KeySchedule
+initKS k = mv2ks (lit 0) k' .
+           mv2ks (lit 1) k' .
+           mv2ks (lit 2) k' .
+           mv2ks (lit 3) k' .
+           mv2ks (lit 4) k' . 
+           mv2ks (lit 5) k' . 
+           mv2ks (lit 6) k' . 
+           mv2ks (lit 7) k' 
    where
+
+     k' :: Vec 8 (W 32)
+     k' = splitkey k
 
      mv2ks :: W 6 -> Vec 8 (W 32) -> Vec 60 (W 32) -> Vec 60 (W 32)
      mv2ks i k w = w != toFinite i $ k `index` (toFinite i)

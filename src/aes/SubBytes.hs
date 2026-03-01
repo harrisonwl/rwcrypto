@@ -102,6 +102,13 @@ mkstate [ [v00 , v01 , v02 , v03]
     r1 = fromList [lit v10 , lit v11 , lit v12 , lit v13] 
     r2 = fromList [lit v20 , lit v21 , lit v22 , lit v23] 
     r3 = fromList [lit v30 , lit v31 , lit v32 , lit v33]
+
+-- | Appendix B, FIPS197-upd, page 34, row 1.
+s0 :: State 
+s0 = mkstate [ [ 0x19 , 0xa0 , 0x9a , 0xe9 ]
+             , [ 0x3d , 0xf4 , 0xc6 , 0xf8 ]
+             , [ 0xe3 , 0xe2 , 0x8d , 0x48 ]
+             , [ 0xbe , 0x2b , 0x2a , 0x08 ] ]
     
 i0 :: State
 i0 = mkstate

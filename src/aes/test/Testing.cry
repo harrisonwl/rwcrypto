@@ -9,6 +9,20 @@ randKeys = random zero
 randTexts : [10][128]
 randTexts = random zero
 
+randState : [10] State
+randState = random zero
+
+rRK : RoundKey
+rRK = [[0x8b, 0x84, 0x31, 0x70], [0xbd, 0x47, 0x07, 0x58],
+       [0xf0, 0x08, 0x48, 0xd9], [0x0d, 0x07, 0xeb, 0x59]]
+
+rst : State
+rst = [ [0x1b, 0x75, 0x4a, 0xc0]
+      , [0xf3, 0xf8, 0xd2, 0x2c]
+      , [0xb3, 0x0f, 0xcb, 0x79]
+      , [0x81, 0x78, 0xb9, 0x8d] ]
+
+
 key1 : [256]
 key1 = random (zero : [256])
 
@@ -20,3 +34,13 @@ keyex = 0x603DEB1015CA71BE2B73AEF0857D77811F352C073B6108D72D9810A30914DFF4
 plaintext : [128]
 plaintext = 0x6BC1BEE22E409F96E93D7E117393172A
 
+// ----------------------------------
+// ----------------------------------
+// ----------------------------------
+// ----------------------------------
+
+i0 : [128]
+i0 = 0xd4e0b81ebfb441275d52119830aef1e5
+
+s0 : State
+s0 = msgToState i0

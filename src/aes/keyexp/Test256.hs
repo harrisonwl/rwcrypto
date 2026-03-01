@@ -8,8 +8,9 @@ import ReWire.Finite
 import ReWire.Vectors hiding (update)
 
 import Aes.ExtensionalSemantics
-import Aes.KeyExp.Reference256(Key, KeySchedule, ks0, keyexpand) 
-import Aes.KeyExp.Hardware256(I(..), hdl)
+import Aes.Basic(Key, KeySchedule, joinkey)
+import Aes.KeyExp.Reference256(ks0 , keyexpand , keyexpansion) 
+import Aes.KeyExp.Hardware256(I(..) , hdl)
 
 import Aes.KeyExp.KATs 
 import ReWire.Interactive(Pretty , pretty , pp)
@@ -38,7 +39,27 @@ go :: Integer -> IO ()
 go i = pretty $ ref i
 
 ref :: Integer -> W 32
-ref i = fst $ runST (keyexpand i k0) (undefined, undefined)
+ref i = fst $ runST (keyexpand i (joinkey k0)) (undefined, undefined)
+
+
+refkats :: Bool
+refkats = P.and $ P.map (\ (k , ks) -> keyexpansion (joinkey k) P.== ks) crud
+  where
+    crud :: [(Vec 8 (W 32), KeySchedule)]
+    crud = P.map (\ (ktup , w) -> (tuple2vec ktup , updates w ks0)) kats
+
+
+-- KeySchedule -> [(Int , W 32)]
+
+updates :: KnownNat n => [(Int , a)] -> Vec n a -> Vec n a
+updates [] v         = v
+updates ((i,w):us) v = updates us ((v != (finite (P.toInteger i))) w)
+
+ups :: [(Int , Int)]
+ups = [(3,3) , (1,1) , (2,2)]
+
+zeros :: Vec 4 Int
+zeros = fromList [0,0,0,0]
 
 ------
 -- Hardware Semantics test functions
@@ -91,6 +112,8 @@ key_expansion k = P.zip [0..59] (P.drop 23 $ P.map outs $ takeStr (P.length ins0
      ins0 :: [I (W 32)]
      ins0 = mkcalls k -- Uses example from above (k0)
 
+-- | runkats compares the ReWire hardware version to Python generated
+-- | KATs.
 runkats = ans P.== (P.map key_expansion (P.map tuple2vec keys))
   where
     keys = P.map P.fst kats
@@ -130,7 +153,7 @@ mkcall k ix = [ KB $ k `index` finite 0
        where
          rounds = P.take 13 (repeat Round)
 
-key0 :: Key
+key0 :: Vec 8 (W 32)
 key0 = fromList [ lit 0 , lit 0 , lit 0 , lit 0
                 , lit 0 , lit 0 , lit 0 , lit 0 ]
 

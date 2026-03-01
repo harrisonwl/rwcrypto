@@ -30,4 +30,4 @@ The development plan will create four distinct instances of AES KeyExpansion:
 1. KeyExpansion128, KeyExpansion192, and KeyExpansion256. These are  with the key and key schedule sizes fixed to those in the above table; and
 2. KeyExpansionCfg. This design takes an additional mode input signal (e.g., M128, M192, and M256) to signify the mode.
 
-It must be the case
+

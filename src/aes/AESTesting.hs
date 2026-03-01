@@ -9,12 +9,13 @@ import ReWire.Vectors (index , generate)
 
 import ReWire.Interactive (dshow , hex , xshow)
 
+import Aes.Basic(State,RoundKey,initState)
+import Aes.SubBytes(subbytes)
 import Aes.AddRoundKey(addRoundKey)
-
-type State    = Vec 4 (Vec 4 (W 8))
-type RoundKey = Vec 4 (Vec 4 (W 8))
-
-
+import Aes.Cipher256(encrypt256)
+import Aes.ShiftRows(shiftrows)
+import Aes.MixColumns(mixcolumns)
+import Aes.KeyExp.Reference256(keyexpansion)
 
 -- | Testing code
 
@@ -47,15 +48,80 @@ mkstate [ [v00 , v01 , v02 , v03]
     r2 = fromList [lit v20 , lit v21 , lit v22 , lit v23] 
     r3 = fromList [lit v30 , lit v31 , lit v32 , lit v33]
     
-s0 :: State
-s0 = mkstate
+
+-- |
+-- | Here's a Cryptol example KAT. Defined in test/Testing.cry
+-- |
+-- // https://csrc.nist.gov/CSRC/media/Projects/Cryptographic-Standards-and-Guidelines/documents/examples/AES_Core256.pdf
+-- 
+-- keyex : [256]
+-- keyex = 0x603DEB1015CA71BE2B73AEF0857D77811F352C073B6108D72D9810A30914DFF4
+-- 
+-- plaintext : [128]
+-- plaintext = 0x6BC1BEE22E409F96E93D7E117393172A
+-- 
+-- Testing> encrypt keyex plaintext
+-- 0xf3eed1bdb5d2a03c064b5a7e3db181f8
+-- Testing> 
+
+-- | Appendix B, FIPS197-upd, page 34, row 1.
+s0 :: State 
+s0 = mkstate [ [ 0x19 , 0xa0 , 0x9a , 0xe9 ]
+             , [ 0x3d , 0xf4 , 0xc6 , 0xf8 ]
+             , [ 0xe3 , 0xe2 , 0x8d , 0x48 ]
+             , [ 0xbe , 0x2b , 0x2a , 0x08 ] ]
+
+key0 :: W 256
+key0 = lit 0x2b7e151628aed2a6abf7158809cf4f3c
+
+s1 :: State
+s1 = mkstate
         [ [0xd4, 0xe0, 0xb8, 0x1e]
         , [0xbf, 0xb4, 0x41, 0x27]
         , [0x5d, 0x52, 0x11, 0x98]
         , [0x30, 0xae, 0xf1, 0xe5] ]
 
-s1 :: State
-s1 = mkstate [ [0x04, 0xe0, 0x48, 0x28 ]
+s2 :: State
+s2 = mkstate [ [0x04, 0xe0, 0x48, 0x28 ]
              , [0x66, 0xcb, 0xf8, 0x06 ]
              , [0x81, 0x19, 0xd3, 0x26 ]
              , [0xe5, 0x9a, 0x7a, 0x4c]]
+
+ex1 :: W 256
+ex1 = lit 0x94eeea8b1f2ada84adf103313eae6670952419a1f4b16d53d83f13e63c9f6b11
+
+-- From both nist.fips.197-upd1 (Appendix A3) and AES_Core256
+keyex :: W 256
+keyex = lit 0x603DEB1015CA71BE2B73AEF0857D77811F352C073B6108D72D9810A30914DFF4
+
+plaintext :: W 128
+plaintext = lit 0x6BC1BEE22E409F96E93D7E117393172A
+
+crypttext :: W 128
+crypttext = lit 0xf3eed1bdb5d2a03c064b5a7e3db181f8
+
+
+-- msgToState 0x6BC1BEE22E409F96E93D7E117393172A
+-- [[0x6b, 0x2e, 0xe9, 0x73], [0xc1, 0x40, 0x3d, 0x93],
+--  [0xbe, 0x9f, 0x7e, 0x17], [0xe2, 0x96, 0x11, 0x2a]]
+--
+-- ShiftRows (msgToState 0x6BC1BEE22E409F96E93D7E117393172A)
+-- [[0x6b, 0x2e, 0xe9, 0x73], [0x40, 0x3d, 0x93, 0xc1],
+--  [0x7e, 0x17, 0xbe, 0x9f], [0x2a, 0xe2, 0x96, 0x11]]
+-- "0x6B937E962EC11711E940BE2A733D9FE2"
+--  0x6b407e2a2e3d17e2e993be9673c19f11
+-- "0x6B967E93C12E1117BE40E92AE29F3D73"
+
+-- 0xd2c9f01d9582ea9ae1001b41755db045
+-- 0xD295E175C982005DF0EA1BB01D9A4145
+-- 0x3EF7B44564950ECC1955E4289C1816EE
+
+
+
+-- k0 is keyex ^^^ split into bytes
+k0 :: Vec 32 (W 8) 
+k0 = fromList
+        [ lit 0x60 , lit 0x3d , lit 0xeb , lit 0x10 , lit 0x15 , lit 0xca , lit 0x71 , lit 0xbe
+        , lit 0x2b , lit 0x73 , lit 0xae , lit 0xf0 , lit 0x85 , lit 0x7d , lit 0x77 , lit 0x81
+        , lit 0x1f , lit 0x35 , lit 0x2c , lit 0x07 , lit 0x3b , lit 0x61 , lit 0x08 , lit 0xd7
+        , lit 0x2d , lit 0x98 , lit 0x10 , lit 0xa3 , lit 0x09 , lit 0x14 , lit 0xdf , lit 0xf4 ]

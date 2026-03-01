@@ -21,7 +21,7 @@ import Control.Monad.Identity
 import Control.Monad.State
 import Control.Monad.Resumption.Reactive
 
-import Aes.Basic(update , (!=) , (@@@) , toW32 , toByte4)
+import Aes.Basic(update , (!=) , (@@@) , toW32 , toByte4) -- , Key , KeySchedule)
 import Aes.SubBytes(subword)
 import Aes.RotWord(rotword)
 

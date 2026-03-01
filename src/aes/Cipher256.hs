@@ -1,18 +1,21 @@
 {-# LANGUAGE DataKinds #-}
-module Aes.Cipher256 where
+module Aes.Cipher256( encrypt256 ) where
 
 import Prelude (($),foldl)
 import ReWire
 import ReWire.Bits ((^))
 import ReWire.Vectors (index, generate)
 import ReWire.Finite
-import ReWire.FiniteComp
+import ReWire.FiniteComp as FC
 
-import Aes.Basic (State, RoundKey)
+import Aes.Basic (State, RoundKey , Key , KeySchedule , toByte4 , splitkey)
 import Aes.AddRoundKey (addRoundKey)
 import Aes.SubBytes (subbytes)
 import Aes.ShiftRows (shiftrows)
-import Aes.MixColumns (mixColumns)
+import Aes.MixColumns (mixcolumns)
+import Aes.KeyExp.Reference256 (keyexpansion)
+
+import Aes.TestStates(states)
 
 -- | AES parameters for AES-256
 --          Key Length (Nk words) | Block Size (Nb words) | Number of Rounds (Nr)
@@ -21,77 +24,29 @@ import Aes.MixColumns (mixColumns)
 -- -------------------------------------------------------------------------------
 
 -- | Type for the expanded key schedule (AES-256)
-type KeySchedule = Vec 60 (Vec 4 (W 8))  -- For AES-256: 15 round keys × 4 words × 4 bytes
+-- type KeySchedule = Vec 60 (Vec 4 (W 8))  -- For AES-256: 15 round keys × 4 words × 4 bytes
 
 -- | Extract a round key from the key schedule (AES-256)
 -- Each round key is 4 words (16 bytes) = Vec 4 (Vec 4 (W 8))
+
 extractRoundKey :: KeySchedule -> Finite 15 -> RoundKey
-extractRoundKey w round = generate $ \i -> generate $ \j -> 
-  w `index` (roundIndex round i) `index` j
+extractRoundKey ks f15 = fromList $ toByte4 (ks `index` i0)  -- correct order?
+                                  : toByte4 (ks `index` i1) 
+                                  : toByte4 (ks `index` i2)
+                                  : toByte4 (ks `index` i3) : []
   where
-    -- Convert round number and word index to key schedule index
-    roundIndex :: Finite 15 -> Finite 4 -> Finite 60
-    roundIndex r i = case (r, i) of
-      (0, 0) -> 0
-      (0, 1) -> 1
-      (0, 2) -> 2
-      (0, 3) -> 3
-      (1, 0) -> 4
-      (1, 1) -> 5
-      (1, 2) -> 6
-      (1, 3) -> 7
-      (2, 0) -> 8
-      (2, 1) -> 9
-      (2, 2) -> 10
-      (2, 3) -> 11
-      (3, 0) -> 12
-      (3, 1) -> 13
-      (3, 2) -> 14
-      (3, 3) -> 15
-      (4, 0) -> 16
-      (4, 1) -> 17
-      (4, 2) -> 18
-      (4, 3) -> 19
-      (5, 0) -> 20
-      (5, 1) -> 21
-      (5, 2) -> 22
-      (5, 3) -> 23
-      (6, 0) -> 24
-      (6, 1) -> 25
-      (6, 2) -> 26
-      (6, 3) -> 27
-      (7, 0) -> 28
-      (7, 1) -> 29
-      (7, 2) -> 30
-      (7, 3) -> 31
-      (8, 0) -> 32
-      (8, 1) -> 33
-      (8, 2) -> 34
-      (8, 3) -> 35
-      (9, 0) -> 36
-      (9, 1) -> 37
-      (9, 2) -> 38
-      (9, 3) -> 39
-      (10, 0) -> 40
-      (10, 1) -> 41
-      (10, 2) -> 42
-      (10, 3) -> 43
-      (11, 0) -> 44
-      (11, 1) -> 45
-      (11, 2) -> 46
-      (11, 3) -> 47
-      (12, 0) -> 48
-      (12, 1) -> 49
-      (12, 2) -> 50
-      (12, 3) -> 51
-      (13, 0) -> 52
-      (13, 1) -> 53
-      (13, 2) -> 54
-      (13, 3) -> 55
-      (14, 0) -> 56
-      (14, 1) -> 57
-      (14, 2) -> 58
-      (14, 3) -> 59
+    i0 , i1 , i2 , i3 :: Finite 60
+    i0 = times4 f15
+    i1 = times4 f15 FC.+ finite 1
+    i2 = times4 f15 FC.+ finite 2
+    i3 = times4 f15 FC.+ finite 3
+
+    times4 :: Finite 15 -> Finite 60
+    times4 f15 = (finite 4) FC.* (toFinite (toW4 f15))
+      where
+        toW4 :: Finite 15 -> W 4
+        toW4 f15 = fromFinite f15
+
 
 -- | The main Cipher function for AES-256 as defined in Figure 5 of NIST FIPS 197
 -- Cipher(byte in[4*Nb], byte out[4*Nb], word w[Nb*(Nr+1)])
@@ -108,30 +63,36 @@ cipher state w = finalRound (rounds state w)
     
     roundFunction :: State -> Finite 15 -> State
     roundFunction s round = addRoundKey (extractRoundKey w round) 
-                                       (mixColumns (shiftrows (subbytes s)))
+                                       (mixcolumns (shiftrows (subbytes s)))
     
     -- Final round: SubBytes, ShiftRows, AddRoundKey (no MixColumns)
     finalRound :: State -> State
     finalRound s = addRoundKey (extractRoundKey w 14) 
                                (shiftrows (subbytes s))
 
+-- 
+-- This corresponds to Specification.cry's encrypt
+-- 
+encrypt256 :: Key -> State -> State
+encrypt256 k inp = cipher inp (keyexpansion k)
+
 -- | Alternative implementation using explicit round structure for AES-256
 cipherExplicit :: State -> KeySchedule -> State
 cipherExplicit state w = 
-  let s0 = addRoundKey (extractRoundKey w 0) state
-      s1 = addRoundKey (extractRoundKey w 1) (mixColumns (shiftrows (subbytes s0)))
-      s2 = addRoundKey (extractRoundKey w 2) (mixColumns (shiftrows (subbytes s1)))
-      s3 = addRoundKey (extractRoundKey w 3) (mixColumns (shiftrows (subbytes s2)))
-      s4 = addRoundKey (extractRoundKey w 4) (mixColumns (shiftrows (subbytes s3)))
-      s5 = addRoundKey (extractRoundKey w 5) (mixColumns (shiftrows (subbytes s4)))
-      s6 = addRoundKey (extractRoundKey w 6) (mixColumns (shiftrows (subbytes s5)))
-      s7 = addRoundKey (extractRoundKey w 7) (mixColumns (shiftrows (subbytes s6)))
-      s8 = addRoundKey (extractRoundKey w 8) (mixColumns (shiftrows (subbytes s7)))
-      s9 = addRoundKey (extractRoundKey w 9) (mixColumns (shiftrows (subbytes s8)))
-      s10 = addRoundKey (extractRoundKey w 10) (mixColumns (shiftrows (subbytes s9)))
-      s11 = addRoundKey (extractRoundKey w 11) (mixColumns (shiftrows (subbytes s10)))
-      s12 = addRoundKey (extractRoundKey w 12) (mixColumns (shiftrows (subbytes s11)))
-      s13 = addRoundKey (extractRoundKey w 13) (mixColumns (shiftrows (subbytes s12)))
+  let s0  = addRoundKey (extractRoundKey w  0) state
+      s1  = addRoundKey (extractRoundKey w  1) (mixcolumns (shiftrows (subbytes s0)))
+      s2  = addRoundKey (extractRoundKey w  2) (mixcolumns (shiftrows (subbytes s1)))
+      s3  = addRoundKey (extractRoundKey w  3) (mixcolumns (shiftrows (subbytes s2)))
+      s4  = addRoundKey (extractRoundKey w  4) (mixcolumns (shiftrows (subbytes s3)))
+      s5  = addRoundKey (extractRoundKey w  5) (mixcolumns (shiftrows (subbytes s4)))
+      s6  = addRoundKey (extractRoundKey w  6) (mixcolumns (shiftrows (subbytes s5)))
+      s7  = addRoundKey (extractRoundKey w  7) (mixcolumns (shiftrows (subbytes s6)))
+      s8  = addRoundKey (extractRoundKey w  8) (mixcolumns (shiftrows (subbytes s7)))
+      s9  = addRoundKey (extractRoundKey w  9) (mixcolumns (shiftrows (subbytes s8)))
+      s10 = addRoundKey (extractRoundKey w 10) (mixcolumns (shiftrows (subbytes s9)))
+      s11 = addRoundKey (extractRoundKey w 11) (mixcolumns (shiftrows (subbytes s10)))
+      s12 = addRoundKey (extractRoundKey w 12) (mixcolumns (shiftrows (subbytes s11)))
+      s13 = addRoundKey (extractRoundKey w 13) (mixcolumns (shiftrows (subbytes s12)))
       s14 = addRoundKey (extractRoundKey w 14) (shiftrows (subbytes s13))
   in s14
 
@@ -143,3 +104,4 @@ testCipher = do
   -- Add test cases here using the example from NIST FIPS 197
   putStrLn "Test completed"
 -}
+
