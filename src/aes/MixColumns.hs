@@ -1,5 +1,5 @@
 {-# LANGUAGE DataKinds #-}
-module Aes.MixColumns (mixcolumns) where
+module Aes.MixColumns (mixcolumns , transpose) where
 
 import Prelude (Integer , ($) , IO , putStrLn , (++))
 import ReWire
@@ -9,7 +9,7 @@ import ReWire.FiniteComp     as FC hiding ((*) , (+))
 import ReWire.Vectors hiding ((++))
 import ReWire.Interactive (dshow , hex , xshow , bshow)
 
-import Aes.Basic(State , Column)
+import Aes.Basic(State , Column , transpose)
 
 -- | Multiplication by 2 in GF(2^8). It's also called xtimes in FIPS197.
 mul2 :: W 8 -> W 8
@@ -39,10 +39,6 @@ mixColumn c = fromList
 -- | reads the j-th column in a state.
 column :: Finite 4 -> State -> Column
 column j s = generate $ \ i -> (s `index` i) `index` j
-
-transpose :: State -> State
-transpose s = generate $ \ i ->
-              generate $ \ j -> s `index` j `index` i
 
 mixcolumns :: State -> State
 mixcolumns s = transpose $ generate $ \ j -> mixColumn (column j s)

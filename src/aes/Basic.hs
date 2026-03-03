@@ -11,8 +11,10 @@ module Aes.Basic( State
                 , toByte4
                 , toW32
                 , splitkey
+                , joinkey
                 , initState
-                , finalState ) where
+                , finalState
+                , transpose ) where
 
 import Prelude hiding ((++))
 import ReWire
@@ -23,6 +25,10 @@ import ReWire.FiniteComp as FC
 type State    = Vec 4 (Vec 4 (W 8))
 type Column   = Vec 4 (W 8)
 type RoundKey = Vec 4 (Vec 4 (W 8))
+
+transpose :: State -> State
+transpose s = generate $ \ i ->
+              generate $ \ j -> s `index` j `index` i
 
 -- |
 -- | N.b., we represent the type of key as (8 x W 32) rather than (32 x W 8)

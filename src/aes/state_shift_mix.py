@@ -163,6 +163,64 @@ def mix_columns(state: List[List[int]]) -> List[List[int]]:
 
 
 # -----------------------------------------------------------------------------
+# 4. AddRoundKey (FIPS 197 Section 5.1.4, Eq. 5.9)
+# -----------------------------------------------------------------------------
+#
+# "ADD ROUND KEY () is a transformation of the state in which a round key is
+#  combined with the state by applying the bitwise XOR operation. In particular,
+#  each round key consists of four words from the key schedule ... each of which
+#  is combined with a column of the state as follows:"
+#
+#   [s'_{0,c}, s'_{1,c}, s'_{2,c}, s'_{3,c}] = [s_{0,c}, s_{1,c}, s_{2,c}, s_{3,c}] ⊕ w_{4*round+c}
+#   for 0 ≤ c < 4
+#
+# So column c of the state is XORed with word w[4*round+c]. A "round key" for
+# one invocation is 4 words (16 bytes). Byte addressing within words is as in
+# Section 3.5 (row index r corresponds to byte r of the word).
+
+
+def add_round_key(state: List[List[int]], round_key: List[List[int]]) -> List[List[int]]:
+    """
+    AddRoundKey: combine the state with a round key by XOR (FIPS 197, Section 5.1.4).
+
+    Eq. 5.9: column c of the state is XORed with word round_key[c]:
+    [s'_{0,c}, s'_{1,c}, s'_{2,c}, s'_{3,c}] = [s_{0,c}, s_{1,c}, s_{2,c}, s_{3,c}] ⊕ round_key[c]
+
+    Args:
+        state: 4x4 state array (state[r][c]).
+        round_key: List of 4 words; round_key[c] is the word for column c, each word
+                   4 bytes [b0, b1, b2, b3] with b_r corresponding to row r.
+
+    Returns:
+        New 4x4 state after AddRoundKey (does not modify state in place).
+    """
+    assert len(round_key) == 4 and all(len(w) == 4 for w in round_key), "Round key must be 4 words of 4 bytes each"
+    new_state = [[0] * 4 for _ in range(4)]
+    for r in range(4):
+        for c in range(4):
+            new_state[r][c] = (state[r][c] ^ round_key[c][r]) & 0xFF
+    return new_state
+
+
+def round_key_from_schedule(key_schedule: List[List[int]], round_index: int) -> List[List[int]]:
+    """
+    Extract the round key for a given round from the key schedule (FIPS 197 Section 5.2).
+
+    For AES-256, key_schedule has 60 words (w[0]..w[59]); round_index in 0..14.
+    Round key for round r is w[4*r], w[4*r+1], w[4*r+2], w[4*r+3].
+
+    Args:
+        key_schedule: List of words from Key Expansion; key_schedule[i] = w[i] (4 bytes).
+        round_index: Round number (0 ≤ round ≤ Nr; for AES-256, Nr=14).
+
+    Returns:
+        List of 4 words (the round key) for use with add_round_key().
+    """
+    start = 4 * round_index
+    return [list(key_schedule[start + c]) for c in range(4)]
+
+
+# -----------------------------------------------------------------------------
 # Helpers and tests (match Haskell ShiftRows.hs / MixColumns.hs test vectors)
 # -----------------------------------------------------------------------------
 
@@ -235,6 +293,19 @@ def main() -> None:
     mc = mix_columns(rst)
     assert mc == expected_mc, f"MixColumns mismatch:\n{state_hex(mc)}\nexpected:\n{state_hex(expected_mc)}"
     print("MixColumns: OK")
+
+    # AddRoundKey tests (FIPS 197 Section 5.1.4, Eq. 5.9)
+    zero_state = [[0] * 4 for _ in range(4)]
+    rk = [[0x11, 0x12, 0x13, 0x14], [0x21, 0x22, 0x23, 0x24], [0x31, 0x32, 0x33, 0x34], [0x41, 0x42, 0x43, 0x44]]
+    after_ark = add_round_key(zero_state, rk)
+    for r in range(4):
+        for c in range(4):
+            assert after_ark[r][c] == rk[c][r], f"AddRoundKey(0, rk): expected {rk[c][r]} at [{r},{c}], got {after_ark[r][c]}"
+    print("AddRoundKey (zero state): OK")
+    # AddRoundKey is its own inverse (XOR)
+    restored = add_round_key(after_ark, rk)
+    assert restored == zero_state, "AddRoundKey inverse (XOR twice) failed"
+    print("AddRoundKey (inverse): OK")
 
     print("\nAll tests passed.")
     print("\nShiftRows(rst):")

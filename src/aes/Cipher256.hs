@@ -1,5 +1,5 @@
 {-# LANGUAGE DataKinds #-}
-module Aes.Cipher256( encrypt256 ) where
+module Aes.Cipher256( encrypt256 , extractRoundKey ) where
 
 import Prelude (($),foldl)
 import ReWire
@@ -24,7 +24,8 @@ import Aes.TestStates(states)
 -- -------------------------------------------------------------------------------
 
 -- | Type for the expanded key schedule (AES-256)
--- type KeySchedule = Vec 60 (Vec 4 (W 8))  -- For AES-256: 15 round keys × 4 words × 4 bytes
+-- type KeySchedule = Vec 60 (Vec 4 (W 8))
+-- For AES-256: 15 round keys × 4 words × 4 bytes
 
 -- | Extract a round key from the key schedule (AES-256)
 -- Each round key is 4 words (16 bytes) = Vec 4 (Vec 4 (W 8))
