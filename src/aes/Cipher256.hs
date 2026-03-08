@@ -8,7 +8,7 @@ import ReWire.Vectors (index, generate)
 import ReWire.Finite
 import ReWire.FiniteComp as FC
 
-import Aes.Basic (State, RoundKey , Key , KeySchedule , toByte4 , splitkey)
+import Aes.Basic (State, RoundKey , Key , KeySchedule , toByte4 , splitkey , transpose)
 import Aes.AddRoundKey (addRoundKey)
 import Aes.SubBytes (subbytes)
 import Aes.ShiftRows (shiftrows)
@@ -31,10 +31,11 @@ import Aes.TestStates(states)
 -- Each round key is 4 words (16 bytes) = Vec 4 (Vec 4 (W 8))
 
 extractRoundKey :: KeySchedule -> Finite 15 -> RoundKey
-extractRoundKey ks f15 = fromList $ toByte4 (ks `index` i0)  -- correct order?
-                                  : toByte4 (ks `index` i1) 
-                                  : toByte4 (ks `index` i2)
-                                  : toByte4 (ks `index` i3) : []
+extractRoundKey ks f15 = -- transpose $
+                            fromList $ toByte4 (ks `index` i0)  
+                                     : toByte4 (ks `index` i1) 
+                                     : toByte4 (ks `index` i2)
+                                     : toByte4 (ks `index` i3) : []
   where
     i0 , i1 , i2 , i3 :: Finite 60
     i0 = times4 f15

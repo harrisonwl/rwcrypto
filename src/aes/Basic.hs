@@ -9,6 +9,7 @@ module Aes.Basic( State
                 , (!=)
                 , (@@@)
                 , toByte4
+                , fromW32
                 , toW32
                 , splitkey
                 , joinkey
@@ -83,6 +84,15 @@ w @@@ i = w `index` (F.toFinite i)
 
 toByte4 :: W 32 -> Vec 4 (W 8)
 toByte4 w32 = fromList [s0 , s1 , s2 , s3]
+  where
+    s0 , s1 , s2 , s3 :: W 8
+    s0 = slice (Proxy :: Proxy 0)  w32
+    s1 = slice (Proxy :: Proxy 8)  w32
+    s2 = slice (Proxy :: Proxy 16) w32
+    s3 = slice (Proxy :: Proxy 24) w32
+
+fromW32 :: W 32 -> ( W 8 , W 8 , W 8 , W 8 )
+fromW32 w32 = ( s0 , s1 , s2 , s3 )
   where
     s0 , s1 , s2 , s3 :: W 8
     s0 = slice (Proxy :: Proxy 0)  w32
