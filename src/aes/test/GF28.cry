@@ -46,6 +46,12 @@ irreducible = <| x^^8 + x^^4 + x^^3 + x + 1 |>
 mult : GF28 -> GF28 -> GF28
 mult x y = pmod (pmult x y) irreducible
 
+w : GF28
+w = <| x^^6 + x^^4 + x^^2 + x + 1 |>
+
+m : GF28
+m = <| x^^4 + x + 1 |>
+
 /** A GF28 value to a scalar power */
 pow : GF28 -> [8] -> GF28
 pow n k = vals ! 0 where

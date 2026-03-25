@@ -49,7 +49,6 @@ eval (Final i su sh ka) w s = ka'
     sh' = shiftrows su'
     ka' = addRoundKey (transpose (extractRoundKey w i)) sh'
 
-
 check :: Round -> KeySchedule -> State -> ( State , Bool )
 check (Round i su sh mc ka) w s = ( ka' , w32s2state su Prelude.== su' &&
                                           w32s2state sh Prelude.== sh' &&

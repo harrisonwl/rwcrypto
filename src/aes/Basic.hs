@@ -31,6 +31,12 @@ transpose :: State -> State
 transpose s = generate $ \ i ->
               generate $ \ j -> s `index` j `index` i
 
+-- matrixmult :: State -> State -> W 8 -- State
+-- matrixmult m x = m00
+--   where
+--     m00 = m `lkup` (0 , 0)
+
+
 -- |
 -- | N.b., we represent the type of key as (8 x W 32) rather than (32 x W 8)
 -- | It's way more sensible.
