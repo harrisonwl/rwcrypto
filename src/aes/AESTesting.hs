@@ -9,10 +9,11 @@ import ReWire.Vectors (index , generate)
 
 import ReWire.Interactive (dshow , hex , xshow)
 
-import Aes.Basic(KeySchedule,State,RoundKey,initState)
+import Aes.Basic(KeySchedule,State,RoundKey,initState,finalState)
 import Aes.SubBytes(subbytes)
 import Aes.AddRoundKey(addRoundKey)
-import Aes.Cipher256(encrypt256,extractRoundKey)
+import Aes.Cipher256(encrypt256)
+import Aes.InvCipher256(decrypt256)
 import Aes.ShiftRows(shiftrows)
 import Aes.MixColumns(mixcolumns)
 import Aes.KeyExp.Reference256(keyexpansion)
@@ -81,10 +82,25 @@ keyex = lit 0x603DEB1015CA71BE2B73AEF0857D77811F352C073B6108D72D9810A30914DFF4
 plaintext :: W 128
 plaintext = lit 0x6BC1BEE22E409F96E93D7E117393172A
 
+-- xshow $ thereandback keyex plaintext
+-- "0x6BC1BEE22E409F96E93D7E117393172A"
+
 crypttext :: W 128
 crypttext = lit 0xf3eed1bdb5d2a03c064b5a7e3db181f8
 
+-- decrypt keyex crypttext
+-- 0x6bc1bee22e409f96e93d7e117393172a
 
+go :: W 256 -> W 128 -> W 128
+go k w = finalState (encrypt256 k (initState w))
+
+thereandback :: W 256 -> W 128 -> W 128
+thereandback k w = finalState $ decrypt256 k (encrypt256 k (initState w))
+
+-- | Corresponding to msgToState are:
+-- | initState  :: W 128 -> State
+-- | finalState :: State -> W 128 
+-- |
 -- msgToState 0x6BC1BEE22E409F96E93D7E117393172A
 -- [[0x6b, 0x2e, 0xe9, 0x73], [0xc1, 0x40, 0x3d, 0x93],
 --  [0xbe, 0x9f, 0x7e, 0x17], [0xe2, 0x96, 0x11, 0x2a]]

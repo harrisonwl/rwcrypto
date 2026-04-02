@@ -9,7 +9,7 @@ import ReWire.Vectors (index , generate)
 
 import ReWire.Interactive (dshow , hex , xshow)
 
-import Aes.Basic(Column,KeySchedule,State,RoundKey,initState,toByte4,fromW32)
+import Aes.Basic(Column,KeySchedule,State,RoundKey,initState,toByte4,fromW32,transpose)
 import Aes.SubBytes(subbytes)
 import Aes.AddRoundKey(addRoundKey)
 import Aes.Cipher256(encrypt256,extractRoundKey)
@@ -49,8 +49,8 @@ mkstate [ [v00 , v01 , v02 , v03]
     r3 = fromList [lit v30 , lit v31 , lit v32 , lit v33]
 
 
-toState :: (W 32 , W 32 , W 32 , W 32) -> (Column , Column , Column , Column )
-toState (w0 , w1 , w2 , w3) = (col0 , col1 , col2 , col3)
+toState :: (W 32 , W 32 , W 32 , W 32) -> State -- (Column , Column , Column , Column )
+toState (w0 , w1 , w2 , w3) = transpose $ fromList [col0 , col1 , col2 , col3] -- (col0 , col1 , col2 , col3)
   where
     col0 , col1 , col2 , col3 :: Column
     col0 = toByte4 w0

@@ -10,6 +10,7 @@ import ReWire.Vectors hiding ((++))
 import ReWire.Interactive (dshow , hex , xshow , bshow)
 
 import Aes.Basic(State , Column , transpose)
+import AES.GF28(mult)
 
 xtimes :: W 8 -> W 8
 xtimes x = if (x >>. lit 7) B.== lit 0
@@ -17,27 +18,38 @@ xtimes x = if (x >>. lit 7) B.== lit 0
              else ((x <<. lit 1) ^ lit 0x1B)
 
 -- | Multiplication by 2 in GF(2^8). It's also called xtimes in FIPS197.
-mul2 :: W 8 -> W 8
-mul2 x = xtimes x
+mult2 :: W 8 -> W 8
+mult2 x = xtimes x
 
 -- Check out section 4.2.1 in FIPS197 about how to express
 -- multiplication in terms of xtime.
 
 -- | Multiplication by 3 in GF(2^8)
-mul3 :: W 8 -> W 8
-mul3 x = mul2 x ^ x
+mult3 :: W 8 -> W 8
+mult3 x = mult2 x ^ x
 
-mul4 :: W 8 -> W 8
-mul4 x = mul2 x ^ mul2 x
+multt3 :: W 8 -> W 8
+multt3 x = lit 0x3 `mult` x
 
-mul8 :: W 8 -> W 8
-mul8 x = mul4 x ^ mul4 x
+mult4 :: W 8 -> W 8
+mult4 x = mult2 x ^ mult2 x
 
+mult8 :: W 8 -> W 8
+mult8 x = mult4 x ^ mult4 x
+
+mult9 , mult0b, mult0d, mult0e :: W 8 -> W 8
+mult9 x  = mult8 x ^ x
+mult0b x = mult8 x ^ mult2 x ^ x
+mult0d x = mult8 x ^ mult4 x ^ x
+mult0e x = mult8 x ^ mult4 x ^ mult2 x
+
+-- 4/1: complete this and change invMixColumn
 mul9 , mul0b, mul0d, mul0e :: W 8 -> W 8
-mul9 x  = mul8 x ^ x
-mul0b x = mul8 x ^ mul2 x ^ x
-mul0d x = mul8 x ^ mul4 x ^ x
-mul0e x = mul8 x ^ mul4 x ^ mul2 x
+mul9 x  = lit 0x09 `mult` x
+mul0b x = lit 0x0b `mult` x
+mul0d x = lit 0x0d `mult` x
+mul0e x = lit 0x0e `mult` x
+    -- differs from mul0e
 
 -- | Apply MixColumns transformation to a single column
 invMixColumn :: Column -> Column
@@ -111,6 +123,22 @@ rst = mkstate $
       , [0xb3, 0x0f, 0xcb, 0x79]
       , [0x81, 0x78, 0xb9, 0x8d] ]
 
+-- Cryptols InvMixColumns rst:
+imc :: State
+imc = mkstate [[0x16, 0xec, 0xa8, 0x09], [0xf0, 0x50, 0xac, 0xec], [0x11, 0x79, 0xe6, 0x80], [0x2d, 0x3f, 0x08, 0x7d]]
+
+-- | It appears that invmixcolumns is working.
+-- λ> ps imc
+--   0x16 0xEC 0xA8 0x09
+--   0xF0 0x50 0xAC 0xEC
+--   0x11 0x79 0xE6 0x80
+--   0x2D 0x3F 0x08 0x7D
+-- λ> ps $ invmixcolumns rst
+--   0x16 0xEC 0xA8 0x09
+--   0xF0 0x50 0xAC 0xEC
+--   0x11 0x79 0xE6 0x80
+--   0x2D 0x3F 0x08 0x7D
+  
 -- Spec.cry's mixcolumns answer
 mc :: State
 mc = mkstate $

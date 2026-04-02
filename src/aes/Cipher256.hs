@@ -13,7 +13,7 @@ import Aes.AddRoundKey (addRoundKey)
 import Aes.SubBytes (subbytes)
 import Aes.ShiftRows (shiftrows)
 import Aes.MixColumns (mixcolumns)
-import Aes.KeyExp.Reference256 (keyexpansion)
+import Aes.KeyExp.Reference256 (keyexpansion , extractRoundKey)
 
 import Aes.TestStates(states)
 
@@ -26,28 +26,6 @@ import Aes.TestStates(states)
 -- | Type for the expanded key schedule (AES-256)
 -- type KeySchedule = Vec 60 (Vec 4 (W 8))
 -- For AES-256: 15 round keys × 4 words × 4 bytes
-
--- | Extract a round key from the key schedule (AES-256)
--- Each round key is 4 words (16 bytes) = Vec 4 (Vec 4 (W 8))
-
-extractRoundKey :: KeySchedule -> Finite 15 -> RoundKey
-extractRoundKey ks f15 = -- transpose $
-                            fromList $ toByte4 (ks `index` i0)  
-                                     : toByte4 (ks `index` i1) 
-                                     : toByte4 (ks `index` i2)
-                                     : toByte4 (ks `index` i3) : []
-  where
-    i0 , i1 , i2 , i3 :: Finite 60
-    i0 = times4 f15
-    i1 = times4 f15 FC.+ finite 1
-    i2 = times4 f15 FC.+ finite 2
-    i3 = times4 f15 FC.+ finite 3
-
-    times4 :: Finite 15 -> Finite 60
-    times4 f15 = (finite 4) FC.* (toFinite (toW4 f15))
-      where
-        toW4 :: Finite 15 -> W 4
-        toW4 f15 = fromFinite f15
 
 
 -- | The main Cipher function for AES-256 as defined in Figure 5 of NIST FIPS 197
@@ -65,7 +43,7 @@ cipher state w = finalRound (rounds state w)
     
     roundFunction :: State -> Finite 15 -> State
     roundFunction s round = addRoundKey (extractRoundKey w round) 
-                                       (mixcolumns (shiftrows (subbytes s)))
+                                        (mixcolumns (shiftrows (subbytes s)))
     
     -- Final round: SubBytes, ShiftRows, AddRoundKey (no MixColumns)
     finalRound :: State -> State
@@ -78,6 +56,7 @@ cipher state w = finalRound (rounds state w)
 encrypt256 :: Key -> State -> State
 encrypt256 k inp = cipher inp (keyexpansion k)
 
+{-
 -- | Alternative implementation using explicit round structure for AES-256
 cipherExplicit :: State -> KeySchedule -> State
 cipherExplicit state w = 
@@ -97,6 +76,7 @@ cipherExplicit state w =
       s13 = addRoundKey (extractRoundKey w 13) (mixcolumns (shiftrows (subbytes s12)))
       s14 = addRoundKey (extractRoundKey w 14) (shiftrows (subbytes s13))
   in s14
+-}
 
 {-
 -- | Testing function

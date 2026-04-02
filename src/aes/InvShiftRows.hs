@@ -1,22 +1,22 @@
 {-# LANGUAGE DataKinds #-}
 module Aes.InvShiftRows (invshiftrows) where
 
--- import ReWire
--- import ReWire.Bits
--- import ReWire.Finite
+import ReWire
+import ReWire.Bits
+import ReWire.Finite
+import ReWire.Interactive (dshow , hex , xshow)
+
 import ReWire.FiniteComp as FC
 import ReWire.Vectors(index , generate)
 
-import Aes.Basic(State)
-
--- import ReWire.Interactive (dshow , hex , xshow)
+import Aes.Basic(State , Column)
 
 invshiftrows :: State -> State
 invshiftrows v = generate $ \ i ->
                  generate $ \ j ->
                                (v `index` i) `index` (j FC.- i)
                            
-{-
+
 -- | Testing code
 -- | Testing code
 
@@ -63,6 +63,8 @@ rst = mkstate $
       , [0xb3, 0x0f, 0xcb, 0x79]
       , [0x81, 0x78, 0xb9, 0x8d] ]
 
+{-
+
 pp :: State -> Finite 4 -> IO ()
 pp s i = do
             let v0 = xshow $ index (s `index` i) 0
@@ -78,7 +80,6 @@ ps s = do
          pp s (finite 2)
          pp s (finite 3)
 
-
 mkstate :: [[Integer]] -> State
 mkstate [ [v00 , v01 , v02 , v03] 
         , [v10 , v11 , v12 , v13] 
@@ -91,14 +92,6 @@ mkstate [ [v00 , v01 , v02 , v03]
     r1 = fromList [lit v10 , lit v11 , lit v12 , lit v13] 
     r2 = fromList [lit v20 , lit v21 , lit v22 , lit v23] 
     r3 = fromList [lit v30 , lit v31 , lit v32 , lit v33]
-
-rst :: State
-rst = mkstate $
-      [ [0x1b, 0x75, 0x4a, 0xc0]
-      , [0xf3, 0xf8, 0xd2, 0x2c]
-      , [0xb3, 0x0f, 0xcb, 0x79]
-      , [0x81, 0x78, 0xb9, 0x8d] ]
-
 
 e :: State
 e = mkstate $
@@ -135,5 +128,6 @@ i0 = mkstate
         , [0xbf, 0xb4, 0x41, 0x27]
         , [0x5d, 0x52, 0x11, 0x98]
         , [0x30, 0xae, 0xf1, 0xe5] ]
+
 
 -}

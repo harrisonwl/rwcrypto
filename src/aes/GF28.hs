@@ -1,5 +1,5 @@
 {-# LANGUAGE DataKinds #-}
-module AES.GF28(dot) where
+module AES.GF28(mult) where
 
 import Prelude (($))
 import ReWire
@@ -62,6 +62,6 @@ pmod w = drop $
     h :: W 8
     h = take w
 
-dot :: W 8 -> W 8 -> W 8
-dot w m = pmod (pmul w m)
+mult :: W 8 -> W 8 -> W 8
+mult w m = pmod (pmul w m)
 

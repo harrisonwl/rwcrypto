@@ -1,6 +1,7 @@
 {-# LANGUAGE DataKinds #-}
 module Aes.KeyExp.Reference256 ( keyexpand
                                , keyexpansion
+                               , extractRoundKey
                                , ks0
                                , rnd
                                , RF )
@@ -14,13 +15,35 @@ import ReWire.Finite
 import ReWire.FiniteComp as FC
 import Aes.ExtensionalSemantics
 
-import Aes.Basic(Key , KeySchedule , (!=) , (@@@)  , toW32 , splitkey)
+import Aes.Basic(Key , KeySchedule , RoundKey , (!=) , (@@@)  , toW32 , splitkey , toByte4 , transpose)
 import Aes.SubBytes(subword)
 import Aes.RotWord(rotword)
 
 ---
 --- Intended to be the standard semantics for AES-256 key expansion.
 ---
+
+-- | Extract a round key from the key schedule (AES-256)
+-- Each round key is 4 words (16 bytes) = Vec 4 (Vec 4 (W 8))
+
+extractRoundKey :: KeySchedule -> Finite 15 -> RoundKey
+extractRoundKey ks f15 = transpose $
+                            fromList $ toByte4 (ks `index` i0)  
+                                     : toByte4 (ks `index` i1) 
+                                     : toByte4 (ks `index` i2)
+                                     : toByte4 (ks `index` i3) : []
+  where
+    i0 , i1 , i2 , i3 :: Finite 60
+    i0 = times4 f15
+    i1 = times4 f15 FC.+ finite 1
+    i2 = times4 f15 FC.+ finite 2
+    i3 = times4 f15 FC.+ finite 3
+
+    times4 :: Finite 15 -> Finite 60
+    times4 f15 = (finite 4) FC.* (toFinite (toW4 f15))
+      where
+        toW4 :: Finite 15 -> W 4
+        toW4 f15 = fromFinite f15
 
 -- |
 -- | AES-256 instance
