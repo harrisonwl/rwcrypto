@@ -3,14 +3,19 @@ module Testing where
 import GF28
 import Specification
 
-randKeys : [10] [256]
+randKeys : [1000] [256]
 randKeys = random zero
 
-randTexts : [10][128]
+randTexts : [1000][128]
 randTexts = random zero
+
+ans : [1000]([256], [128], [128])
+ans = map (\ (k , t) -> (k , t , encrypt k t)) (zip randKeys randTexts)
 
 randState : [10] State
 randState = random zero
+
+
 
 rRK : RoundKey
 rRK = [[0x8b, 0x84, 0x31, 0x70], [0xbd, 0x47, 0x07, 0x58],

@@ -1,5 +1,5 @@
 {-# LANGUAGE DataKinds #-}
-module Aes.AddRoundKey (addRoundKey) where
+module Aes.Operations.AddRoundKey (addRoundKey) where
 
 import Prelude (($))
 import ReWire.Bits ((^))

@@ -1,7 +1,7 @@
 {-# LANGUAGE DataKinds #-}
 module AESTesting where
 
-import Prelude (($) , Integer , map , (.) , IO , putStrLn , (++))
+-- import Prelude (($) , Integer , map , (.) , IO , putStrLn , (++) , (==))
 import ReWire
 import ReWire.Bits ((^) , lit)
 import ReWire.Finite (finite)
@@ -10,15 +10,25 @@ import ReWire.Vectors (index , generate)
 import ReWire.Interactive (dshow , hex , xshow)
 
 import Aes.Basic(KeySchedule,State,RoundKey,initState,finalState)
-import Aes.SubBytes(subbytes)
-import Aes.AddRoundKey(addRoundKey)
-import Aes.Cipher256(encrypt256)
-import Aes.InvCipher256(decrypt256)
-import Aes.ShiftRows(shiftrows)
-import Aes.MixColumns(mixcolumns)
+import Aes.Operations.SubBytes(subbytes)
+import Aes.Operations.AddRoundKey(addRoundKey)
+import Aes.Operations.ShiftRows(shiftrows)
+import Aes.Operations.MixColumns(mixcolumns)
 import Aes.KeyExp.Reference256(keyexpansion)
 
+import Aes.Cipher256(encrypt256)
+import Aes.InvCipher256(decrypt256)
+
 import Aes.Test.TestingFunctions
+import Aes.KATs(kats)
+
+-- runkats :: [W 128]
+runkats :: [Bool]
+-- runkats :: [(W 128 , W 128)]
+runkats = map (\ (k , t , a) -> a == (finalState $ encrypt256 k t)) tests
+  where
+   tests :: [(W 256 , State , W 128)]
+   tests = map (\ (k , t , a) -> (lit k , initState (lit t) , lit a)) kats
 
 -- |
 -- | Here's a Cryptol example KAT. Defined in test/Testing.cry

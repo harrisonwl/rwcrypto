@@ -16,8 +16,8 @@ import ReWire.FiniteComp as FC
 import Aes.ExtensionalSemantics
 
 import Aes.Basic(Key , KeySchedule , RoundKey , (!=) , (@@@)  , toW32 , splitkey , toByte4 , transpose)
-import Aes.SubBytes(subword)
-import Aes.RotWord(rotword)
+import Aes.Operations.SubBytes(subword)
+import Aes.Operations.RotWord(rotword)
 
 ---
 --- Intended to be the standard semantics for AES-256 key expansion.

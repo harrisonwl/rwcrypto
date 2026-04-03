@@ -9,10 +9,10 @@ import ReWire.Finite
 import ReWire.FiniteComp as FC
 
 import Aes.Basic (State, RoundKey , Key , KeySchedule , toByte4 , splitkey , transpose)
-import Aes.AddRoundKey (addRoundKey)
-import Aes.InvSubBytes (invsubbytes)
-import Aes.InvShiftRows (invshiftrows)
-import Aes.InvMixColumns (invmixcolumns)
+import Aes.Operations.AddRoundKey (addRoundKey)
+import Aes.Operations.InvSubBytes (invsubbytes)
+import Aes.Operations.InvShiftRows (invshiftrows)
+import Aes.Operations.InvMixColumns (invmixcolumns)
 import Aes.KeyExp.Reference256 (keyexpansion , extractRoundKey)
 
 import Aes.TestStates(states)

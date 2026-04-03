@@ -1,5 +1,5 @@
 {-# LANGUAGE DataKinds #-}
-module AES.GF28(mult) where
+module Aes.Operations.GF28(mult) where
 
 import Prelude (($))
 import ReWire

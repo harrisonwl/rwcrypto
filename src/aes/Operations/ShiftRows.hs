@@ -1,5 +1,5 @@
 {-# LANGUAGE DataKinds #-}
-module Aes.ShiftRows (shiftrows) where
+module Aes.Operations.ShiftRows (shiftrows) where
 
 import ReWire
 import ReWire.Bits

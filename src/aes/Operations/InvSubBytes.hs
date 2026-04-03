@@ -1,5 +1,5 @@
 {-# LANGUAGE DataKinds #-}
-module Aes.InvSubBytes(invsubbytes) where
+module Aes.Operations.InvSubBytes(invsubbytes) where
 
 import Prelude (($) , Integer , map , (.) , IO , putStrLn , (++))
 import ReWire

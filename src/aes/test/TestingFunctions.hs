@@ -10,11 +10,11 @@ import ReWire.Vectors (index , generate)
 import ReWire.Interactive (dshow , hex , xshow)
 
 import Aes.Basic(Column,KeySchedule,State,RoundKey,initState,toByte4,fromW32,transpose)
-import Aes.SubBytes(subbytes)
-import Aes.AddRoundKey(addRoundKey)
-import Aes.Cipher256(encrypt256,extractRoundKey)
-import Aes.ShiftRows(shiftrows)
-import Aes.MixColumns(mixcolumns,transpose)
+import Aes.Operations.SubBytes(subbytes)
+import Aes.Operations.AddRoundKey(addRoundKey)
+import Aes.Cipher256(encrypt256)
+import Aes.Operations.ShiftRows(shiftrows)
+import Aes.Operations.MixColumns(mixcolumns)
 import Aes.KeyExp.Reference256(keyexpansion)
 
 -- | Testing code

@@ -1,5 +1,5 @@
 {-# LANGUAGE DataKinds #-}
-module Aes.Cipher256( encrypt256 , extractRoundKey ) where
+module Aes.Cipher256( encrypt256 ) where
 
 import Prelude (($),foldl)
 import ReWire
@@ -9,10 +9,10 @@ import ReWire.Finite
 import ReWire.FiniteComp as FC
 
 import Aes.Basic (State, RoundKey , Key , KeySchedule , toByte4 , splitkey , transpose)
-import Aes.AddRoundKey (addRoundKey)
-import Aes.SubBytes (subbytes)
-import Aes.ShiftRows (shiftrows)
-import Aes.MixColumns (mixcolumns)
+import Aes.Operations.AddRoundKey (addRoundKey)
+import Aes.Operations.SubBytes (subbytes)
+import Aes.Operations.ShiftRows (shiftrows)
+import Aes.Operations.MixColumns (mixcolumns)
 import Aes.KeyExp.Reference256 (keyexpansion , extractRoundKey)
 
 import Aes.TestStates(states)

@@ -1,5 +1,5 @@
 {-# LANGUAGE DataKinds #-}
-module Aes.InvMixColumns (invmixcolumns) where
+module Aes.Operations.InvMixColumns (invmixcolumns) where
 
 import Prelude (Integer , ($) , IO , putStrLn , (++) , (==))
 import ReWire
@@ -10,7 +10,7 @@ import ReWire.Vectors hiding ((++))
 import ReWire.Interactive (dshow , hex , xshow , bshow)
 
 import Aes.Basic(State , Column , transpose)
-import AES.GF28(mult)
+import Aes.Operations.GF28(mult)
 
 xtimes :: W 8 -> W 8
 xtimes x = if (x >>. lit 7) B.== lit 0

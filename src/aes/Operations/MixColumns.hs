@@ -1,5 +1,5 @@
 {-# LANGUAGE DataKinds #-}
-module Aes.MixColumns (mixcolumns , transpose) where
+module Aes.Operations.MixColumns (mixcolumns) where
 
 import Prelude (Integer , ($) , IO , putStrLn , (++))
 import ReWire

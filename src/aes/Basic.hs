@@ -59,6 +59,7 @@ type Key         = W 256
 --     r2 = fromList [lit v20 , lit v21 , lit v22 , lit v23] 
 --     r3 = fromList [lit v30 , lit v31 , lit v32 , lit v33]
 
+{-
 extractRoundKey :: KeySchedule -> Finite 15 -> RoundKey
 extractRoundKey ks f15 = fromList $ toByte4 (ks `index` i0)  -- correct order?
                                   : toByte4 (ks `index` i1) 
@@ -76,6 +77,7 @@ extractRoundKey ks f15 = fromList $ toByte4 (ks `index` i0)  -- correct order?
       where
         toW4 :: Finite 15 -> W 4
         toW4 f15 = fromFinite f15
+-}
 
 lkup :: Vec 4 (Vec 4 (W 8)) -> (Finite 4 , Finite 4) -> W 8
 lkup s (i , j) = (s `index` i) `index` j
