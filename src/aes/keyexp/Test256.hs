@@ -9,7 +9,7 @@ import ReWire.Vectors hiding (update)
 
 import Aes.ExtensionalSemantics
 import Aes.Basic(Key, KeySchedule, joinkey)
-import Aes.KeyExp.Reference256(ks0 , keyexpand , keyexpansion) 
+import Aes.KeyExp.Reference256(ks0 , keyexpand) 
 import Aes.KeyExp.Hardware256(I(..) , hdl)
 
 import Aes.KeyExp.KATs 
@@ -35,21 +35,18 @@ instance Pretty (I a) where
 -- Reference Semantics test functions
 ------
 
-go :: Integer -> IO ()
-go i = pretty $ ref i
+-- go :: Integer -> IO ()
+-- go i = pretty $ ref i
 
-ref :: Integer -> W 32
-ref i = fst $ runST (keyexpand i (joinkey k0)) (undefined, undefined)
-
+-- ref :: Integer -> W 32
+-- ref i = fst $ runST (keyexpand i (joinkey k0)) (undefined, undefined)
+-- refkats = P.and $ P.map (\ (k , ks) -> keyexpansion (joinkey k) P.== ks) crud
 
 refkats :: Bool
-refkats = P.and $ P.map (\ (k , ks) -> keyexpansion (joinkey k) P.== ks) crud
+refkats = P.and $ P.map (\ (k , ks) -> keyexpand (joinkey k) P.== ks) crud
   where
     crud :: [(Vec 8 (W 32), KeySchedule)]
     crud = P.map (\ (ktup , w) -> (tuple2vec ktup , updates w ks0)) kats
-
-
--- KeySchedule -> [(Int , W 32)]
 
 updates :: KnownNat n => [(Int , a)] -> Vec n a -> Vec n a
 updates [] v         = v

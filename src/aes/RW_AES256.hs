@@ -1,62 +1,75 @@
 {-# LANGUAGE DataKinds #-}
-module Aes.KeyExp.Hardware256 where
+--module Aes.RW_AES256 where
 
 import Prelude as P hiding ((-) , (*) , (==) , (<) , (^) , (/) , head , tail , round , (<>))
-import ReWire hiding (put , get , signal , lift)
+import ReWire
 import ReWire.Bits as RB hiding ((<) , (*))
 import ReWire.Vectors hiding (update)
 import ReWire.Finite
 
-import Aes.ExtensionalSemantics
-import Aes.KeyExp.Reference256(rnd , RF)
+import Aes.Basic(splitkey,Key,KeySchedule)
+import Aes.KeyExp.Reference256(rnd , RF , ks0 , initKeySched)
 
-------
--- Hardware Semantics for key size 256. By which I mean, the reference semantics
--- reformulated into a reactive resumption style. In Reference256, the main function
--- is "keyexpand":
---      * typed in the state monad
---      * corresponds to nist.fips.197, Fig.11
---      * loops are unrolled
--- In the Hardware semantics, the main functions are
---     1. handler that responds input signals (i.e., I Key), and
---          hdl :: I Key -> Re (I Key) (KeySchedule, W 6) (Maybe (W 32)) ()
---     2. an sequential semantics in the form of NFM23 semantics
---        expressed in Haskell
---          exec :: Re (I i) s o () ->                        
---                  (I i, s, o) -> [I i] -> Stream (I i, s, o)
-------
+-- | N.b., using the ReWire definitions for these transformers
+-- | and not the "semantic" definitions from AES.ExtensionalSemantics
+type ST s     = StateT s Identity
+type Re i s o = ReacT i o (ST s)
 
 --
--- Given that the key is either 128, 192, or 256 bits, I'll assume that the
--- machine will read in 64 bits of key at a time.
+-- I'm just going to go ahead and input Keys and Texts as whole blobs
+-- rather than marshaling/unmarshaling.
 -- 
-data I a = KB a  
+data I   = Key (W 256)
+         | Txt (W 128)
          | Round
          | Cont
-         | Read Integer -- just for instrumentation
-        -- | M128 | M192 | M256 -- modes
+      {- | M128 | M192 -} | M256 -- modes
+        -- | Read Integer -- just for instrumentation
 
 ----
 -- read and write key registers
 ----
 
+-- putKS :: Finite 60 -> W 32 -> StateT RF Identity ()
 putKS :: Finite 60 -> W 32 -> ST RF ()
 putKS ix w = do
                (ks , c) <- get
                put ((ks != ix) w , c)
 
 -- | applies Reference256.rnd
+-- round :: StateT RF Identity ()
 round :: ST RF ()
 round = do
           (ks , c) <- get
           let (ks' , c') = rnd (ks , c)
           put (ks' , c')
 
-{-
-foo i (KB w) = lift $ putKS i w >> signal Nothing 
-foo i _      = 
--}
-          
+-- loop :: I (W 32) -> StateT RF Identity ()
+loop :: I -> Re I RF (Maybe (W 32)) ()
+loop M256    = do
+                  lift $ put (ks0 , finite 0)
+                  i <- signal Nothing
+                  loop i
+loop (Key k) = do
+                  lift (put (ks , finite 8))
+                  i <- signal Nothing
+                  loop i
+  where
+    ks :: KeySchedule
+    ks = initKeySched k
+loop Round   = do
+                  lift round
+                  i <- signal Nothing
+                  loop i
+loop Cont    = do
+                  i <- signal Nothing
+                  loop i
+                  
+start :: ReacT I (Maybe (W 32)) Identity ()
+start = extrude (loop Cont) (ks0 , finite 0)
+
+-- loop (KB                
+{-          
 hdl :: I (W 32) -> Re (I (W 32)) RF (Maybe (W 32)) b
 hdl (KB w0)  = do
                    lift $ putKS (finite 0) w0
@@ -107,7 +120,8 @@ hdl Round     = do
 hdl Cont      = do
                   i <- signal Nothing
                   hdl i
-hdl (Read ix) = do
-                  ({- _ ,-} ks , _) <- lift get
-                  i <- signal (Just (ks `index` (finite ix) ))
-                  hdl i
+-- hdl (Read ix) = do
+--                   ({- _ ,-} ks , _) <- lift get
+--                   i <- signal (Just (ks `index` (finite ix) ))
+--                   hdl i
+-}

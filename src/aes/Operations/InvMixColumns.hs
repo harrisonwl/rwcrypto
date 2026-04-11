@@ -7,7 +7,7 @@ import ReWire.Bits           as B
 import ReWire.Finite
 import ReWire.FiniteComp     as FC hiding ((*) , (+))
 import ReWire.Vectors hiding ((++))
-import ReWire.Interactive (dshow , hex , xshow , bshow)
+-- import ReWire.Interactive (dshow , hex , xshow , bshow)
 
 import Aes.Basic(State , Column , transpose)
 import Aes.Operations.GF28(mult)
@@ -78,6 +78,7 @@ row i s = generate $ \ j -> (s `index` i) `index` j
 invmixcolumns :: State -> State
 invmixcolumns s = transpose $ generate $ \ j -> invMixColumn (column j s)
 
+{-
 -- | Testing code
 
 pc :: Column -> IO ()
@@ -209,3 +210,4 @@ col2 = fromList [ lit 0xd4 , lit 0xbf , lit 0x5d , lit 0x30 ]
 -- thirdrow s0 s1 s2 s3 = s0 ^ s1 ^ (mul2 s2) ^ (mul3 s3)
 -- --thirdrow s0 s1 s2 s3 = s0 ^ s1 ^ (lit 2 * s2) ^ (lit 3 * s3)
 -- -- firstrow (lit 27) (lit 243) (lit 179) (lit 129)
+-}
