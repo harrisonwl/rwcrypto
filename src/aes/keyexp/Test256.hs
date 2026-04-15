@@ -10,16 +10,27 @@ import ReWire.Vectors hiding (update)
 import Aes.ExtensionalSemantics
 import Aes.Basic(Key, KeySchedule, joinkey)
 import Aes.KeyExp.Reference256(ks0 , keyexpand) 
-import Aes.KeyExp.Hardware256(I(..) , hdl)
+-- import Aes.KeyExp.Hardware256(I(..) {- , hdl -})
 
 import Aes.KeyExp.KATs 
 import ReWire.Interactive(Pretty , pretty , pp)
+
+--
+-- Given that the key is either 128, 192, or 256 bits, I'll assume that the
+-- machine will read in 64 bits of key at a time.
+-- 
+data I a = KB a  
+         | Round
+         | Cont
+         | Read Integer -- just for instrumentation
+        -- | M128 | M192 | M256 -- modes
+
 
 instance Pretty a => Show (I a) where
   show (KB a)   = "Key " P.++ pp a
   show Round    = "Round"
   show Cont     = "Cont"
-  show (Read i) = "Read " P.++ show i
+--  show (Read i) = "Read " P.++ show i
 
 instance Pretty Int where
   pp i = show i
@@ -28,7 +39,7 @@ instance Pretty (I a) where
   pp (KB _)   = "Key ?"
   pp Round    = "Round"
   pp Cont     = "Cont"
-  pp (Read i) = "Read " P.++ show i
+--  pp (Read i) = "Read " P.++ show i
 
 
 ------
@@ -58,6 +69,11 @@ ups = [(3,3) , (1,1) , (2,2)]
 zeros :: Vec 4 Int
 zeros = fromList [0,0,0,0]
 
+tuple2vec :: (W 32 , W 32 , W 32 , W 32 , W 32 , W 32 , W 32 , W 32) -> Vec 8 (W 32)
+tuple2vec (w0 , w1 , w2 , w3 , w4 , w5 , w6 , w7)
+                  = fromList [w0 , w1 , w2 , w3 , w4 , w5 , w6 , w7]
+
+{-
 ------
 -- Hardware Semantics test functions
 ------
@@ -118,9 +134,6 @@ runkats = ans P.== (P.map key_expansion (P.map tuple2vec keys))
 
 justify =  P.map (\ (i,w32) -> (i,Just w32))
     
-tuple2vec :: (W 32 , W 32 , W 32 , W 32 , W 32 , W 32 , W 32 , W 32) -> Vec 8 (W 32)
-tuple2vec (w0 , w1 , w2 , w3 , w4 , w5 , w6 , w7)
-                  = fromList [w0 , w1 , w2 , w3 , w4 , w5 , w6 , w7]
 
 -- | this encodes a calling protocol for the hdl hardware semantics
 mkcalls :: Vec 8 (W 32) -> [I (W 32)]
@@ -149,6 +162,7 @@ mkcall k ix = [ KB $ k `index` finite 0
                       -- [ Read ix , Cont]
        where
          rounds = P.take 13 (repeat Round)
+-}
 
 key0 :: Vec 8 (W 32)
 key0 = fromList [ lit 0 , lit 0 , lit 0 , lit 0

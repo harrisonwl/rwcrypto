@@ -9,7 +9,7 @@ import ReWire.Vectors(index , generate)
 
 import Aes.Basic(State)
 
-import ReWire.Interactive (dshow , hex , xshow)
+-- import ReWire.Interactive (dshow , hex , xshow)
 
     
 shiftrows :: State -> State
@@ -18,6 +18,7 @@ shiftrows v = generate $ \ i ->
                             (v `index` i) `index` (j FC.+ i)
 --                            (v `index` i) `index` (j FC.- i)
                            
+{-
 -- | Testing code
 
 pp :: State -> Finite 4 -> IO ()
@@ -101,4 +102,5 @@ i0 = mkstate
   0x2C 0xF3 0xF8 0xD2
   0xCB 0x79 0xB3 0x0F
   0x78 0xB9 0x8D 0x81
+-}
 -}

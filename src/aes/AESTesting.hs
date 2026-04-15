@@ -14,7 +14,7 @@ import Aes.Operations.SubBytes(subbytes)
 import Aes.Operations.AddRoundKey(addRoundKey)
 import Aes.Operations.ShiftRows(shiftrows)
 import Aes.Operations.MixColumns(mixcolumns)
-import Aes.KeyExp.Reference256(keyexpansion)
+import Aes.KeyExp.Reference256(keyexpand)
 
 import Aes.Cipher256(encrypt256)
 import Aes.InvCipher256(decrypt256)
@@ -22,13 +22,11 @@ import Aes.InvCipher256(decrypt256)
 import Aes.Test.TestingFunctions
 import Aes.KATs(kats)
 
--- runkats :: [W 128]
 runkats :: [Bool]
--- runkats :: [(W 128 , W 128)]
 runkats = map (\ (k , t , a) -> a == (finalState $ encrypt256 k t)) tests
   where
-   tests :: [(W 256 , State , W 128)]
-   tests = map (\ (k , t , a) -> (lit k , initState (lit t) , lit a)) kats
+   tests :: [(W 256 , W 128 , W 128)]
+   tests = map (\ (k , t , a) -> (lit k , lit t , lit a)) kats
 
 -- |
 -- | Here's a Cryptol example KAT. Defined in test/Testing.cry
@@ -102,10 +100,10 @@ crypttext = lit 0xf3eed1bdb5d2a03c064b5a7e3db181f8
 -- 0x6bc1bee22e409f96e93d7e117393172a
 
 go :: W 256 -> W 128 -> W 128
-go k w = finalState (encrypt256 k (initState w))
+go k w = finalState (encrypt256 k w)
 
 thereandback :: W 256 -> W 128 -> W 128
-thereandback k w = finalState $ decrypt256 k (encrypt256 k (initState w))
+thereandback k w = finalState $ decrypt256 k (encrypt256 k w)
 
 -- | Corresponding to msgToState are:
 -- | initState  :: W 128 -> State

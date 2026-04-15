@@ -26,6 +26,14 @@ subword w32 = toW32 (sub4 (toByte4 w32))
     sub4 :: Vec 4 (W 8) -> Vec 4 (W 8)
     sub4 bytes4 = generate $ \ i -> sbox (bytes4 `index` i)
 
+mkix :: W 8 -> (Index , Index)
+mkix b = (toFinite t4 , toFinite b4)
+  where
+     t4 , b4 :: W 4
+     (t4 , b4) = nibbles b
+
+nibbles :: W 8 -> (W 4 , W 4)
+nibbles w = (take w , drop w)
   
 sbox :: W 8 -> W 8
 sbox w = lkup (mkix w)
@@ -33,21 +41,6 @@ sbox w = lkup (mkix w)
      
      lkup :: (Index , Index) -> W 8
      lkup (i , j) = (sboxTable `index` i) `index` j
-
-     mkix :: W 8 -> (Index , Index)
-     mkix b = (toFinite t4 , toFinite b4)
-       where
-         t4 , b4 :: W 4
-         t4 = take b
-         b4 = drop b
-
-{-
-mkSBox :: [[Integer]] -> SBox
-mkSBox = fromList . Prelude.map toVec16
-  where
-    toVec16 :: [Integer] -> Vec 0x10 (W 8)
-    toVec16 = fromList . Prelude.map lit
--}
 
 -- |
 -- | Figure 7, page 16.

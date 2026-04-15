@@ -44,7 +44,6 @@ lkup s (i , j) = (s `index` i) `index` j
 (@@@) :: (KnownNat n) => Vec n a -> W m -> a
 w @@@ i = w `index` (F.toFinite i)
 
-
 -- |
 -- | This is factor function tweeked so that it takes (W 64) as input instead of Integer. 
 -- |
