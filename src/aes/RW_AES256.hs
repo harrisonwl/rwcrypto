@@ -8,9 +8,8 @@ import ReWire.Vectors hiding (update)
 import ReWire.Finite
 
 import Aes.Basic(splitkey,Key,KeySchedule,State,RoundKey , initState)
-import Aes.KeyExp.Reference256(rnd , RF , ks0 , initKeySched , roundkey)
+import Aes.KeyExp.KeyExpansion256(rnd , RF , ks0 , initKeySched , roundkey)
 
--- import Aes.Basic (State, RoundKey , Key , KeySchedule , toByte4 , splitkey , transpose , initState)
 import Aes.Operations.AddRoundKey (addRoundKey)
 import Aes.Operations.SubBytes (subbytes)
 import Aes.Operations.ShiftRows (shiftrows)

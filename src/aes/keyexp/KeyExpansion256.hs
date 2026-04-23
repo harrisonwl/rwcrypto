@@ -1,11 +1,11 @@
 {-# LANGUAGE TypeOperators #-}
 {-# LANGUAGE DataKinds #-}
-module Aes.KeyExp.Reference256 ( keyexpand
-                               , roundkey
-                               , initKeySched
-                               , ks0
-                               , rnd
-                               , RF )
+module Aes.KeyExp.KeyExpansion256 ( keyexpand
+                                  , roundkey
+                                  , initKeySched
+                                  , ks0
+                                  , rnd
+                                  , RF )
    where
 
 import Prelude as P hiding ((-) , (*) , (<) , (^) , (/) , head , tail , round)
@@ -37,10 +37,28 @@ keyexpand k = fst . rnd . rnd . rnd . rnd . rnd .
 initKeySched :: Key -> KeySchedule
 initKeySched k = splitkey k ReWire.Vectors.++ ks52
 
--- | Extract a round key from the key schedule (AES-256)
--- Each round key is 4 words (16 bytes) = Vec 4 (Vec 4 (W 8))
 
--- | we need to add a primitive to do this:
+-- | Extract a round key from the key schedule (AES-256)
+-- | Each round key is 4 words (16 bytes) = Vec 4 (Vec 4 (W 8))
+roundkey :: KeySchedule -> Finite 15 -> RoundKey
+roundkey ks f15 = transpose $
+                            fromList [ toByte4 (ks `index` i0)  
+                                     , toByte4 (ks `index` i1) 
+                                     , toByte4 (ks `index` i2)
+                                     , toByte4 (ks `index` i3) ]
+  where
+
+    times4 :: Finite 15 -> Finite 60
+    times4 f15 = (finite 4) FC.* (xfinite f15)
+
+    i0 , i1 , i2 , i3 :: Finite 60
+    i0 = times4 f15
+    i1 = times4 f15 FC.+ finite 1
+    i2 = times4 f15 FC.+ finite 2
+    i3 = times4 f15 FC.+ finite 3
+
+-- | Kind of a hack; we need to add a
+-- | primitive to do this:
 xfinite :: Finite 15 -> Finite 60
 xfinite i | i FC.== finite 0  = finite 0
           | i FC.== finite 1  = finite 1
@@ -58,28 +76,6 @@ xfinite i | i FC.== finite 0  = finite 0
           | i FC.== finite 13 = finite 13
           | otherwise         = finite 14
 
-roundkey :: KeySchedule -> Finite 15 -> RoundKey
-roundkey ks f15 = transpose $
-                            fromList [ toByte4 (ks `index` i0)  
-                                     , toByte4 (ks `index` i1) 
-                                     , toByte4 (ks `index` i2)
-                                     , toByte4 (ks `index` i3) ]
-  where
-
-    times4 :: Finite 15 -> Finite 60
-    times4 f15 = (finite 4) FC.* (xfinite f15)
-      where
-        toW4 :: Finite 15 -> W 4
-        toW4 f15 = fromFinite f15
-
-    i0 , i1 , i2 , i3 :: Finite 60
-    i0 = times4 f15
-    i1 = times4 f15 FC.+ finite 1
-    i2 = times4 f15 FC.+ finite 2
-    i3 = times4 f15 FC.+ finite 3
-
-
---
 
 -- |
 -- | Purely functional version of round.
@@ -106,16 +102,10 @@ body i w = let
                 wi8   = w `index` (i FC.- finite 8)
                 im8 :: Finite 60
                 im8 = i `FC.mod` (finite 8)
-                -- iw , imod8 :: W 6
-                -- iw    = fromFinite i
-                -- imod8 = iw % lit 8
                 temp  = if (im8 FC.== finite 0)
---                temp  = if (imod8 RB.== lit 0)                  
                           then
---                             subword(rotword wi1) ^ (toW32 (rcon (iw / (lit 8))))
                              subword(rotword wi1) ^ (toW32 (rcon' (div8 i)))      
                           else if (im8 FC.== finite 4)
---                          else if (imod8 RB.== lit 4)
                                  then
                                    subword wi1
                                  else

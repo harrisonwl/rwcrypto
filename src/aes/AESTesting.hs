@@ -14,7 +14,7 @@ import Aes.Operations.SubBytes(subbytes)
 import Aes.Operations.AddRoundKey(addRoundKey)
 import Aes.Operations.ShiftRows(shiftrows)
 import Aes.Operations.MixColumns(mixcolumns)
-import Aes.KeyExp.Reference256(keyexpand)
+import Aes.KeyExp.KeyExpansion256(keyexpand)
 
 import Aes.Cipher256(encrypt256)
 import Aes.InvCipher256(decrypt256)

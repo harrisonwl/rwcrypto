@@ -89,7 +89,6 @@ v != i = update v i
 
 infixr 2  !=
 
-
 splitkey :: W 256 -> Vec 8 (W 32)
 splitkey key = fromList [s0 , s1 , s2 , s3 , s4 , s5 , s6 , s7]
   where

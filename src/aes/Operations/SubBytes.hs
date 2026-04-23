@@ -29,11 +29,11 @@ subword w32 = toW32 (sub4 (toByte4 w32))
 mkix :: W 8 -> (Index , Index)
 mkix b = (toFinite t4 , toFinite b4)
   where
+     nibbles :: W 8 -> (W 4 , W 4)
+     nibbles w = (take w , drop w)
+
      t4 , b4 :: W 4
      (t4 , b4) = nibbles b
-
-nibbles :: W 8 -> (W 4 , W 4)
-nibbles w = (take w , drop w)
   
 sbox :: W 8 -> W 8
 sbox w = lkup (mkix w)

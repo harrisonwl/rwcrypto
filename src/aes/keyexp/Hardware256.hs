@@ -8,7 +8,7 @@ import ReWire.Vectors hiding (update)
 import ReWire.Finite
 
 import Aes.ExtensionalSemantics
-import Aes.KeyExp.Reference256(rnd , RF)
+import Aes.KeyExp.KeyExpansion256(rnd , RF)
 
 ------
 -- Hardware Semantics for key size 256. By which I mean, the reference semantics

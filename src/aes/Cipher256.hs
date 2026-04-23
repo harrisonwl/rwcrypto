@@ -13,7 +13,7 @@ import Aes.Operations.AddRoundKey (addRoundKey)
 import Aes.Operations.SubBytes (subbytes)
 import Aes.Operations.ShiftRows (shiftrows)
 import Aes.Operations.MixColumns (mixcolumns)
-import Aes.KeyExp.Reference256 (keyexpand , roundkey)
+import Aes.KeyExp.KeyExpansion256 (keyexpand , roundkey)
 
 import Aes.TestStates(states)
 
