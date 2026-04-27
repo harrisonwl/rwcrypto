@@ -8,7 +8,7 @@ import ReWire.Vectors hiding (update)
 import ReWire.Finite
 
 import Aes.Basic(splitkey,Key,KeySchedule,State,RoundKey , initState)
-import Aes.KeyExp.KeyExpansion256(rnd , RF , ks0 , initKeySched , roundkey)
+import Aes.KeyExp.KeyExpansion256(rnd , RF , ks0 , initKeySched256 , roundkey)
 
 import Aes.Operations.AddRoundKey (addRoundKey)
 import Aes.Operations.SubBytes (subbytes)
@@ -92,7 +92,7 @@ loop (Key k) = do
                   loop i
   where
     ks :: KeySchedule
-    ks = initKeySched k
+    ks = initKeySched256 k
 loop KERound = do
                   lift round
                   i <- signal Nothing

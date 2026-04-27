@@ -8,12 +8,12 @@ import ReWire.Vectors (index, generate)
 import ReWire.Finite
 import ReWire.FiniteComp as FC
 
-import Aes.Basic (State, RoundKey , Key , KeySchedule , toByte4 , splitkey , transpose , initState)
+import Aes.Basic (State, RoundKey , roundkey , Key , KeySchedule , toByte4 , splitkey , transpose , initState)
 import Aes.Operations.AddRoundKey (addRoundKey)
 import Aes.Operations.SubBytes (subbytes)
 import Aes.Operations.ShiftRows (shiftrows)
 import Aes.Operations.MixColumns (mixcolumns)
-import Aes.KeyExp.KeyExpansion256 (keyexpand , roundkey)
+import Aes.KeyExp.KeyExpansion256 (keyexpand)
 
 import Aes.TestStates(states)
 
@@ -55,35 +55,3 @@ cipher state w = finalRound (rounds state w)
 -- 
 encrypt256 :: Key -> W 128 -> State
 encrypt256 k inp = cipher (initState inp) (keyexpand k)
-
-{-
--- | Alternative implementation using explicit round structure for AES-256
-cipherExplicit :: State -> KeySchedule -> State
-cipherExplicit state w = 
-  let s0  = addRoundKey (roundkey w  0) state
-      s1  = addRoundKey (roundkey w  1) (mixcolumns (shiftrows (subbytes s0)))
-      s2  = addRoundKey (roundkey w  2) (mixcolumns (shiftrows (subbytes s1)))
-      s3  = addRoundKey (roundkey w  3) (mixcolumns (shiftrows (subbytes s2)))
-      s4  = addRoundKey (roundkey w  4) (mixcolumns (shiftrows (subbytes s3)))
-      s5  = addRoundKey (roundkey w  5) (mixcolumns (shiftrows (subbytes s4)))
-      s6  = addRoundKey (roundkey w  6) (mixcolumns (shiftrows (subbytes s5)))
-      s7  = addRoundKey (roundkey w  7) (mixcolumns (shiftrows (subbytes s6)))
-      s8  = addRoundKey (roundkey w  8) (mixcolumns (shiftrows (subbytes s7)))
-      s9  = addRoundKey (roundkey w  9) (mixcolumns (shiftrows (subbytes s8)))
-      s10 = addRoundKey (roundkey w 10) (mixcolumns (shiftrows (subbytes s9)))
-      s11 = addRoundKey (roundkey w 11) (mixcolumns (shiftrows (subbytes s10)))
-      s12 = addRoundKey (roundkey w 12) (mixcolumns (shiftrows (subbytes s11)))
-      s13 = addRoundKey (roundkey w 13) (mixcolumns (shiftrows (subbytes s12)))
-      s14 = addRoundKey (roundkey w 14) (shiftrows (subbytes s13))
-  in s14
--}
-
-{-
--- | Testing function
-testCipher :: IO ()
-testCipher = do
-  putStrLn "Testing AES-256 Cipher function..."
-  -- Add test cases here using the example from NIST FIPS 197
-  putStrLn "Test completed"
--}
-

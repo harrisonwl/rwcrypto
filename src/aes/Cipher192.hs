@@ -1,5 +1,5 @@
 {-# LANGUAGE DataKinds #-}
-module Aes.Cipher128(encrypt128) where
+module Aes.Cipher192(encrypt192) where
 
 import Prelude (($),foldl)
 import ReWire
@@ -8,12 +8,12 @@ import ReWire.Vectors (index, generate)
 import ReWire.Finite
 import ReWire.FiniteComp
 
-import Aes.Basic (State, RoundKey , Key , KeySchedule , toByte4 , splitkey , transpose , initState)
+import Aes.Basic (State, RoundKey , roundkey , Key , KeySchedule , toByte4 , splitkey , transpose , initState)
 import Aes.Operations.AddRoundKey (addRoundKey)
 import Aes.Operations.SubBytes (subbytes)
 import Aes.Operations.ShiftRows (shiftrows)
 import Aes.Operations.MixColumns (mixcolumns)
-import Aes.KeyExp.KeyExpansion128 (keyexpand , roundkey)
+import Aes.KeyExp.KeyExpansion192 (keyexpand)
 
 
 -- | AES parameters
@@ -40,7 +40,7 @@ cipher state w = finalRound (rounds state w)
     
     -- Main rounds: SubBytes, ShiftRows, MixColumns, AddRoundKey
     rounds :: State -> KeySchedule -> State
-    rounds s w = foldl roundFunction (initialRound s w) [1..9]  -- 9 rounds for AES-128
+    rounds s w = foldl roundFunction (initialRound s w) [1..11]  -- 9 rounds for AES-128
     
     roundFunction :: State -> Finite 15 -> State
     roundFunction s round = addRoundKey (roundkey w round) 
@@ -48,11 +48,11 @@ cipher state w = finalRound (rounds state w)
     
     -- Final round: SubBytes, ShiftRows, AddRoundKey (no MixColumns)
     finalRound :: State -> State
-    finalRound s = addRoundKey (roundkey w 10) 
+    finalRound s = addRoundKey (roundkey w 12) 
                                (shiftrows (subbytes s))
 
 -- 
 -- This corresponds to Specification.cry's encrypt
 -- 
-encrypt128 :: W 128 -> W 128 -> State
-encrypt128 k inp = cipher (initState inp) (keyexpand k)
+encrypt192 :: W 192 -> W 128 -> State
+encrypt192 k inp = cipher (initState inp) (keyexpand k)

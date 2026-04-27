@@ -1,11 +1,11 @@
 {-# LANGUAGE TypeOperators #-}
 {-# LANGUAGE DataKinds #-}
-module Aes.KeyExp.KeyExpansion128 ( keyexpand
+module Aes.KeyExp.KeyExpansion192 {- ( keyexpand
                                   , roundkey
-                                  , initKeySched128
+                                  , initKeySched192
                                   , ks0
                                   , rnd
-                                  , RF )
+                                  , RF ) -}
    where
 
 import Prelude as P hiding ((-) , (*) , (<) , (^) , (/) , head , tail , round)
@@ -15,7 +15,7 @@ import ReWire.Vectors hiding ((!=))
 import ReWire.Finite
 import ReWire.FiniteComp as FC
 
-import Aes.Basic(Key , KeySchedule , RoundKey , roundkey , (!=) , toW32 , splitkey128 , toByte4 , transpose)
+import Aes.Basic(Key , KeySchedule , RoundKey , roundkey , (!=) , toW32 , splitkey192 , toByte4 , transpose)
 import Aes.Operations.SubBytes(subword)
 import Aes.Operations.RotWord(rotword)
 
@@ -29,81 +29,47 @@ import Aes.Operations.RotWord(rotword)
 -- -------------------------------------------------------------------------------
 -- AES-256 |          8           |           4           |        14
 
--- | For AES-128, Nb * (Nr + 1) = 4 * (10 + 1) = 44.
+-- | For AES-192, Nb * (Nr + 1) = 4 * (12 + 1) = 52
 -- |
 -- | Note that we haven't changed the size of KeySchedule.
 -- | 
 
--- |
--- | Standard semantics for Key Expansion
--- |
-
--- | N.b., this fills in the whole KeySchedule, although only
--- | the first 44 elements are used. Should probably trim that.
-keyexpand :: W 128 -> KeySchedule
-keyexpand k = fst . rnd . rnd . rnd . rnd . rnd .
-                    rnd . rnd . rnd . rnd . rnd .
-                    rnd . rnd . rnd $ (initKeySched128 k , finite 4)
-
-type RF          = (KeySchedule, Finite 44)
-
--- | For AES-128, Nb * (Nr + 1) = 4 * (10 + 1) = 44, hence the key schedule has 60 elements:
--- |
--- | Note that we haven't changed the size of KeySchedule.
--- | 
-
-initKeySched128 :: W 128 -> KeySchedule
-initKeySched128 k = splitkey128 k ReWire.Vectors.++ ks56
+initKeySched192 :: W 192 -> KeySchedule
+initKeySched192 k = splitkey192 k ReWire.Vectors.++ ks54
   where
     -- | This is for the initialization of the keyschedule. 
-    ks56 :: Vec 56 (W 32)
-    ks56 = fromList
+    ks54 :: Vec 54 (W 32)
+    ks54 = fromList
              [ lit 0 , lit 0 , lit 0 , lit 0 , lit 0 , lit 0 , lit 0 , lit 0 , lit 0 , lit 0
              , lit 0 , lit 0 , lit 0 , lit 0 , lit 0 , lit 0 , lit 0 , lit 0 , lit 0 , lit 0
              , lit 0 , lit 0 , lit 0 , lit 0 , lit 0 , lit 0 , lit 0 , lit 0 , lit 0 , lit 0
              , lit 0 , lit 0 , lit 0 , lit 0 , lit 0 , lit 0 , lit 0 , lit 0 , lit 0 , lit 0
              , lit 0 , lit 0 , lit 0 , lit 0 , lit 0 , lit 0 , lit 0 , lit 0 , lit 0 , lit 0
-             , lit 0 , lit 0 , lit 0 , lit 0 , lit 0 , lit 0 ]
+             , lit 0 , lit 0 , lit 0 , lit 0 ]
 
--- | Kind of a hack; we need to add a
--- | primitive to do this:
-body :: Finite 60 -> KeySchedule -> W 32
-body i w = let
-                wi1 , wi4 , temp :: W 32 
-                wi1   = w `index` (i FC.- finite 1) -- == temp in Fig. 11.
-                wi4   = w `index` (i FC.- finite 4)
-                imod4 :: Finite 60
-                imod4 = i `FC.mod` (finite 4)
-                temp  = if (imod4 FC.== finite 0)
-                          then
-                             subword(rotword wi1) ^ (toW32 (rcon (ixdiv4 i)))      
-                          -- else if (im8 FC.== finite 4)
-                          --        then
-                          --          subword wi1
-                                 else
-                                   wi1
-            in
-                 wi4 ^ temp
+type RF          = (KeySchedule, Finite 54)
+
 
 -- | effectively, this subtracts 1. Table5 is indexed by 1..10, and
 -- | table5 below is indexed by 0..9.
-ixdiv4 :: Finite 60 -> Finite 10
-ixdiv4 i | idiv4 FC.== finite 0 = finite 0
-         | idiv4 FC.== finite 1 = finite 0
-         | idiv4 FC.== finite 2 = finite 1
-         | idiv4 FC.== finite 3 = finite 2
-         | idiv4 FC.== finite 4 = finite 3
-         | idiv4 FC.== finite 5 = finite 4
-         | idiv4 FC.== finite 6 = finite 5
-         | idiv4 FC.== finite 7 = finite 6
-         | idiv4 FC.== finite 8 = finite 7
-         | idiv4 FC.== finite 9 = finite 8
+-- | Kind of a hack; we need to add a
+-- | primitive to do this:
+ixdiv6 :: Finite 60 -> Finite 10
+ixdiv6 i | idiv6 FC.== finite 0 = finite 0
+         | idiv6 FC.== finite 1 = finite 0
+         | idiv6 FC.== finite 2 = finite 1
+         | idiv6 FC.== finite 3 = finite 2
+         | idiv6 FC.== finite 4 = finite 3
+         | idiv6 FC.== finite 5 = finite 4
+         | idiv6 FC.== finite 6 = finite 5
+         | idiv6 FC.== finite 7 = finite 6
+         | idiv6 FC.== finite 8 = finite 7
+         | idiv6 FC.== finite 9 = finite 8
          | otherwise            = finite 9 -- unreachable.
   where
-    idiv4 :: Finite 60
-    idiv4 = i `FC.div` (finite 4)
+    idiv6 :: Finite 60
+    idiv6 = i `FC.div` (finite 6)
 
-{- Working version -}
 rcon :: Finite 10 -> Vec 4 (W 8)
 rcon i = table5 `index` i -- (i FC.- (finite 1))
 
@@ -122,6 +88,35 @@ table5 = fromList [
                 fromList [ lit 0x1b, lit 0x00, lit 0x00, lit 0x00],
                 fromList [ lit 0x36, lit 0x00, lit 0x00, lit 0x00]
                 ]
+
+-- |
+-- | Standard semantics for Key Expansion
+-- |
+
+-- | N.b., this fills in the whole KeySchedule, although only
+-- | the first 52 elements are used. Should probably trim that.
+keyexpand :: W 192 -> KeySchedule
+keyexpand k = fst . rnd . rnd . rnd . rnd . rnd .
+                    rnd . rnd . rnd . rnd . rnd .
+                    rnd . rnd . rnd $ (initKeySched192 k , finite 6)
+
+body :: Finite 60 -> KeySchedule -> W 32
+body i w = let
+                wi1 , wi6 , temp :: W 32 
+                wi1   = w `index` (i FC.- finite 1) -- == temp in Fig. 11.
+                wi6   = w `index` (i FC.- finite 6)
+                imod6 :: Finite 60
+                imod6 = i `FC.mod` (finite 6)
+                temp  = if (imod6 FC.== finite 0)
+                          then
+                             subword(rotword wi1) ^ (toW32 (rcon (ixdiv6 i)))      
+                          -- else if (im8 FC.== finite 4)
+                          --        then
+                          --          subword wi1
+                                 else
+                                   wi1
+            in
+                 wi6 ^ temp
 
 -- |
 -- | Purely functional version of round.
@@ -146,3 +141,4 @@ ks0 = fromList
         , lit 0 , lit 0 , lit 0 , lit 0 , lit 0 , lit 0 , lit 0 , lit 0 , lit 0 , lit 0
         , lit 0 , lit 0 , lit 0 , lit 0 , lit 0 , lit 0 , lit 0 , lit 0 , lit 0 , lit 0
         , lit 0 , lit 0 , lit 0 , lit 0 , lit 0 , lit 0 , lit 0 , lit 0 , lit 0 , lit 0 ]
+

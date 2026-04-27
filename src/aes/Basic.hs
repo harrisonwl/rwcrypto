@@ -7,11 +7,14 @@ module Aes.Basic( State
                 , lkup
                 , update
                 , (!=)
-                , (@@@)
+--                , (@@@)
                 , toByte4
                 , fromW32
                 , toW32
+                , roundkey
                 , splitkey
+                , splitkey128
+                , splitkey192
                 , joinkey
                 , initState
                 , finalState
@@ -102,6 +105,26 @@ splitkey key = fromList [s0 , s1 , s2 , s3 , s4 , s5 , s6 , s7]
     s6 = slice (Proxy :: Proxy 192) key
     s7 = slice (Proxy :: Proxy 224) key
 
+splitkey192 :: W 192 -> Vec 6 (W 32)
+splitkey192 key = fromList [ s0 , s1 , s2 , s3 , s4 , s5 ]
+  where
+    s0 , s1 , s2 , s3 , s4 , s5 :: W 32
+    s0 = slice (Proxy :: Proxy 0)   key
+    s1 = slice (Proxy :: Proxy 32)  key
+    s2 = slice (Proxy :: Proxy 64)  key
+    s3 = slice (Proxy :: Proxy 96)  key
+    s4 = slice (Proxy :: Proxy 128) key
+    s5 = slice (Proxy :: Proxy 160) key
+
+splitkey128 :: W 128 -> Vec 4 (W 32)
+splitkey128 key = fromList [s0 , s1 , s2 , s3]
+  where
+    s0 , s1 , s2 , s3 :: W 32
+    s0 = slice (Proxy :: Proxy 0)   key
+    s1 = slice (Proxy :: Proxy 32)  key
+    s2 = slice (Proxy :: Proxy 64)  key
+    s3 = slice (Proxy :: Proxy 96)  key
+
 joinkey :: Vec 8 (W 32) -> W 256
 joinkey key = s0 ++ s1 ++ s2 ++ s3 ++ s4 ++ s5 ++ s6 ++ s7
   where
@@ -170,3 +193,64 @@ initState inp = fromList [ r0 , r1 , r2 , r3 ]
     r1 = fromList [ in1 , in5 ,  in9 , in13 ] 
     r2 = fromList [ in2 , in6 , in10 , in14 ] 
     r3 = fromList [ in3 , in7 , in11 , in15 ]
+
+-- | reads a RoundKey from the KeySchedule
+-- | Extract a round key from the key schedule (AES-256)
+-- | Each round key is 4 words (16 bytes) = Vec 4 (Vec 4 (W 8))
+roundkey :: KeySchedule -> Finite 15 -> RoundKey
+roundkey ks f15 = transpose $
+                            fromList [ toByte4 (ks `index` i0)  
+                                     , toByte4 (ks `index` i1) 
+                                     , toByte4 (ks `index` i2)
+                                     , toByte4 (ks `index` i3) ]
+  where
+
+    times4 :: Finite 15 -> Finite 60
+    times4 f15 = (finite 4) FC.* (xfinite f15)
+
+    i0 , i1 , i2 , i3 :: Finite 60
+    i0 = times4 f15
+    i1 = times4 f15 FC.+ finite 1
+    i2 = times4 f15 FC.+ finite 2
+    i3 = times4 f15 FC.+ finite 3
+
+-- roundkey :: KeySchedule -> Finite 15 -> RoundKey
+-- roundkey ks f15 = transpose $
+--                             fromList [ toByte4 (ks `index` i0)  
+--                                      , toByte4 (ks `index` i1) 
+--                                      , toByte4 (ks `index` i2)
+--                                      , toByte4 (ks `index` i3) ]
+--   where
+
+--     times4 :: Finite 15 -> Finite 60
+--     times4 f15 = (finite 4) FC.* (xfinite f15)
+
+--     i0 , i1 , i2 , i3 :: Finite 60
+--     i0 = times4 f15
+--     i1 = times4 f15 FC.+ finite 1
+--     i2 = times4 f15 FC.+ finite 2
+--     i3 = times4 f15 FC.+ finite 3
+
+
+
+-- | Extract a round key from the key schedule (AES-256)
+-- | Each round key is 4 words (16 bytes) = Vec 4 (Vec 4 (W 8))
+-- | Kind of a hack; we need to add a
+-- | primitive to do this:
+xfinite :: Finite 15 -> Finite 60
+xfinite i | i FC.== finite 0  = finite 0
+          | i FC.== finite 1  = finite 1
+          | i FC.== finite 2  = finite 2
+          | i FC.== finite 3  = finite 3
+          | i FC.== finite 4  = finite 4
+          | i FC.== finite 5  = finite 5
+          | i FC.== finite 6  = finite 6
+          | i FC.== finite 7  = finite 7
+          | i FC.== finite 8  = finite 8
+          | i FC.== finite 9  = finite 9
+          | i FC.== finite 10 = finite 10
+          | i FC.== finite 11 = finite 11
+          | i FC.== finite 12 = finite 12
+          | i FC.== finite 13 = finite 13
+          | otherwise         = finite 14
+

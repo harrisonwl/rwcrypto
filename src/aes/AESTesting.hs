@@ -16,17 +16,31 @@ import Aes.Operations.ShiftRows(shiftrows)
 import Aes.Operations.MixColumns(mixcolumns)
 import Aes.KeyExp.KeyExpansion256(keyexpand)
 
+import Aes.Cipher128(encrypt128)
+import Aes.Cipher192(encrypt192)
 import Aes.Cipher256(encrypt256)
 import Aes.InvCipher256(decrypt256)
 
 import Aes.Test.TestingFunctions
-import Aes.KATs(kats)
+import Aes.KATs(kats,kats128,kats192)
 
 runkats :: [Bool]
 runkats = map (\ (k , t , a) -> a == (finalState $ encrypt256 k t)) tests
   where
    tests :: [(W 256 , W 128 , W 128)]
    tests = map (\ (k , t , a) -> (lit k , lit t , lit a)) kats
+
+runkats128 :: [Bool]
+runkats128 = map (\ (k , t , a) -> a == (finalState $ encrypt128 k t)) tests
+  where
+   tests :: [(W 128 , W 128 , W 128)]
+   tests = map (\ (k , t , a) -> (lit k , lit t , lit a)) kats128
+
+runkats192 :: [Bool]
+runkats192 = map (\ (k , t , a) -> a == (finalState $ encrypt192 k t)) tests
+  where
+   tests :: [(W 192 , W 128 , W 128)]
+   tests = map (\ (k , t , a) -> (lit k , lit t , lit a)) kats192
 
 -- |
 -- | Here's a Cryptol example KAT. Defined in test/Testing.cry
@@ -42,8 +56,6 @@ runkats = map (\ (k , t , a) -> a == (finalState $ encrypt256 k t)) tests
 -- Testing> encrypt keyex plaintext
 -- 0xf3eed1bdb5d2a03c064b5a7e3db181f8
 -- Testing> 
-
-
 
 input :: State
 input = mkstate

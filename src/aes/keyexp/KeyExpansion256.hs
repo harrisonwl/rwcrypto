@@ -1,8 +1,7 @@
 {-# LANGUAGE TypeOperators #-}
 {-# LANGUAGE DataKinds #-}
 module Aes.KeyExp.KeyExpansion256 ( keyexpand
-                                  , roundkey
-                                  , initKeySched
+                                  , initKeySched256
                                   , ks0
                                   , rnd
                                   , RF )
@@ -15,7 +14,8 @@ import ReWire.Vectors hiding ((!=))
 import ReWire.Finite
 import ReWire.FiniteComp as FC
 
-import Aes.Basic(Key , KeySchedule , RoundKey , (!=) , {- (@@@) , -} toW32 , splitkey , toByte4 , transpose)
+import Aes.Basic(Key , KeySchedule , RoundKey
+                 , roundkey , (!=) , toW32 , splitkey , toByte4 , transpose)
 import Aes.Operations.SubBytes(subword)
 import Aes.Operations.RotWord(rotword)
 
@@ -23,59 +23,30 @@ import Aes.Operations.RotWord(rotword)
 
 type RF          = (KeySchedule, Finite 60)
 
+-- | This accomplishes what initKS does, but in a vastly
+-- | simpler manner.
+initKeySched256 :: Key -> KeySchedule
+initKeySched256 k = splitkey k ReWire.Vectors.++ ks52
+   where
+     -- | This is for the initialization of the keyschedule. Add the 8 words from the Key and
+     -- | you've got an initialized keyschedule.
+     ks52 :: Vec 52 (W 32)
+     ks52 = fromList
+              [ lit 0 , lit 0 , lit 0 , lit 0 , lit 0 , lit 0 , lit 0 , lit 0 , lit 0 , lit 0
+              , lit 0 , lit 0 , lit 0 , lit 0 , lit 0 , lit 0 , lit 0 , lit 0 , lit 0 , lit 0
+              , lit 0 , lit 0 , lit 0 , lit 0 , lit 0 , lit 0 , lit 0 , lit 0 , lit 0 , lit 0
+              , lit 0 , lit 0 , lit 0 , lit 0 , lit 0 , lit 0 , lit 0 , lit 0 , lit 0 , lit 0
+              , lit 0 , lit 0 , lit 0 , lit 0 , lit 0 , lit 0 , lit 0 , lit 0 , lit 0 , lit 0
+              , lit 0 , lit 0 ]
+
+
 -- |
 -- | Standard semantics for Key Expansion
 -- |
-
 keyexpand :: Key -> KeySchedule
 keyexpand k = fst . rnd . rnd . rnd . rnd . rnd .
                     rnd . rnd . rnd . rnd . rnd .
-                    rnd . rnd . rnd $ (initKeySched k , finite 8)
-
--- | This accomplishes what initKS does, but in a vastly
--- | simpler manner.
-initKeySched :: Key -> KeySchedule
-initKeySched k = splitkey k ReWire.Vectors.++ ks52
-
-
--- | Extract a round key from the key schedule (AES-256)
--- | Each round key is 4 words (16 bytes) = Vec 4 (Vec 4 (W 8))
-roundkey :: KeySchedule -> Finite 15 -> RoundKey
-roundkey ks f15 = transpose $
-                            fromList [ toByte4 (ks `index` i0)  
-                                     , toByte4 (ks `index` i1) 
-                                     , toByte4 (ks `index` i2)
-                                     , toByte4 (ks `index` i3) ]
-  where
-
-    times4 :: Finite 15 -> Finite 60
-    times4 f15 = (finite 4) FC.* (xfinite f15)
-
-    i0 , i1 , i2 , i3 :: Finite 60
-    i0 = times4 f15
-    i1 = times4 f15 FC.+ finite 1
-    i2 = times4 f15 FC.+ finite 2
-    i3 = times4 f15 FC.+ finite 3
-
--- | Kind of a hack; we need to add a
--- | primitive to do this:
-xfinite :: Finite 15 -> Finite 60
-xfinite i | i FC.== finite 0  = finite 0
-          | i FC.== finite 1  = finite 1
-          | i FC.== finite 2  = finite 2
-          | i FC.== finite 3  = finite 3
-          | i FC.== finite 4  = finite 4
-          | i FC.== finite 5  = finite 5
-          | i FC.== finite 6  = finite 6
-          | i FC.== finite 7  = finite 7
-          | i FC.== finite 8  = finite 8
-          | i FC.== finite 9  = finite 9
-          | i FC.== finite 10 = finite 10
-          | i FC.== finite 11 = finite 11
-          | i FC.== finite 12 = finite 12
-          | i FC.== finite 13 = finite 13
-          | otherwise         = finite 14
-
+                    rnd . rnd . rnd $ (initKeySched256 k , finite 8)
 
 -- |
 -- | Purely functional version of round.
@@ -151,17 +122,6 @@ table5 = fromList [
                 fromList [ lit 0x1b, lit 0x00, lit 0x00, lit 0x00],
                 fromList [ lit 0x36, lit 0x00, lit 0x00, lit 0x00]
                 ]
-
--- | This is for the initialization of the keyschedule. Add the 8 words from the Key and
--- | you've got an initialized keyschedule.
-ks52 :: Vec 52 (W 32)
-ks52 = fromList
-         [ lit 0 , lit 0 , lit 0 , lit 0 , lit 0 , lit 0 , lit 0 , lit 0 , lit 0 , lit 0
-         , lit 0 , lit 0 , lit 0 , lit 0 , lit 0 , lit 0 , lit 0 , lit 0 , lit 0 , lit 0
-         , lit 0 , lit 0 , lit 0 , lit 0 , lit 0 , lit 0 , lit 0 , lit 0 , lit 0 , lit 0
-         , lit 0 , lit 0 , lit 0 , lit 0 , lit 0 , lit 0 , lit 0 , lit 0 , lit 0 , lit 0
-         , lit 0 , lit 0 , lit 0 , lit 0 , lit 0 , lit 0 , lit 0 , lit 0 , lit 0 , lit 0
-         , lit 0 , lit 0 ]
 
 ks0 :: KeySchedule
 ks0 = fromList
@@ -280,4 +240,4 @@ rdKS i = do
 -- keyexpand :: Key -> KeySchedule
 -- keyexpand k = fst . rnd . rnd . rnd . rnd . rnd .
 --                     rnd . rnd . rnd . rnd . rnd .
---                     rnd . rnd . rnd $ (initKeySched k , lit 8)
+--                     rnd . rnd . rnd $ (initKeySched256 k , lit 8)

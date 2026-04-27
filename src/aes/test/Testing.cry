@@ -9,8 +9,27 @@ randKeys = random zero
 randTexts : [1000][128]
 randTexts = random zero
 
-ans : [1000]([256], [128], [128])
-ans = map (\ (k , t) -> (k , t , encrypt k t)) (zip randKeys randTexts)
+rand128keys : [1000] [128]
+rand128keys = random keyex
+
+rand128txts : [1000] [128]
+rand128txts = random zero
+
+rand192keys : [1000] [192]
+rand192keys = random keyex
+
+rand192txts : [1000] [128]
+rand192txts = random zero
+
+
+//ans : [1000]([128], [128], [128])
+//ans = map (\ (k , t) -> (k , t , encrypt k t)) (zip rand128keys rand128txts)
+
+ans192 : [1000]([192], [128], [128])
+ans192 = map (\ (k , t) -> (k , t , encrypt k t)) (zip rand192keys rand192txts)
+
+//ans' : [1000]([256], [128], [128])
+//ans' = map (\ (k , t) -> (k , t , encrypt k t)) (zip randKeys randTexts)
 
 randState : [10] State
 randState = random zero

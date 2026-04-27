@@ -8,12 +8,12 @@ import ReWire.Vectors (index, generate)
 import ReWire.Finite
 import ReWire.FiniteComp as FC
 
-import Aes.Basic (State, RoundKey , Key , KeySchedule , toByte4 , splitkey , transpose)
+import Aes.Basic (State, RoundKey , roundkey , Key , KeySchedule , toByte4 , splitkey , transpose)
 import Aes.Operations.AddRoundKey (addRoundKey)
 import Aes.Operations.InvSubBytes (invsubbytes)
 import Aes.Operations.InvShiftRows (invshiftrows)
 import Aes.Operations.InvMixColumns (invmixcolumns)
-import Aes.KeyExp.KeyExpansion256 (keyexpand , roundkey)
+import Aes.KeyExp.KeyExpansion256 (keyexpand)
 
 import Aes.TestStates(states)
 
