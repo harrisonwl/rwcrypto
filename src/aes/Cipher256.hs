@@ -15,8 +15,6 @@ import Aes.Operations.ShiftRows (shiftrows)
 import Aes.Operations.MixColumns (mixcolumns)
 import Aes.KeyExp.KeyExpansion256 (keyexpand)
 
-import Aes.TestStates(states)
-
 -- | AES parameters for AES-256
 --          Key Length (Nk words) | Block Size (Nb words) | Number of Rounds (Nr)
 -- -------------------------------------------------------------------------------
@@ -53,5 +51,5 @@ cipher state w = finalRound (rounds state w)
 -- 
 -- This corresponds to Specification.cry's encrypt
 -- 
-encrypt256 :: Key -> W 128 -> State
+encrypt256 :: W 256 -> W 128 -> State
 encrypt256 k inp = cipher (initState inp) (keyexpand k)

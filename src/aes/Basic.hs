@@ -44,6 +44,11 @@ transpose s = generate $ \ i ->
 lkup :: Vec 4 (Vec 4 (W 8)) -> (Finite 4 , Finite 4) -> W 8
 lkup s (i , j) = (s `index` i) `index` j
 
+{-
+lkup' :: Vec n (Vec m a) -> (Finite n, Finite m) -> a
+lkup' s (i , j) = (s `index` i) `index` j
+-}
+
 (@@@) :: (KnownNat n) => Vec n a -> W m -> a
 w @@@ i = w `index` (F.toFinite i)
 

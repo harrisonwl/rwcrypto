@@ -26,12 +26,12 @@ subword w32 = toW32 (sub4 (toByte4 w32))
     sub4 :: Vec 4 (W 8) -> Vec 4 (W 8)
     sub4 bytes4 = generate $ \ i -> sbox (bytes4 `index` i)
 
+nibbles :: W 8 -> (W 4 , W 4)
+nibbles w = (take w , drop w)
+
 mkix :: W 8 -> (Index , Index)
 mkix b = (toFinite t4 , toFinite b4)
   where
-     nibbles :: W 8 -> (W 4 , W 4)
-     nibbles w = (take w , drop w)
-
      t4 , b4 :: W 4
      (t4 , b4) = nibbles b
   

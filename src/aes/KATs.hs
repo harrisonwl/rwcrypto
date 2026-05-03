@@ -1,4 +1,4 @@
-module Aes.KATs (kats , kats128 , kats192) where
+module Aes.KATs (kats256 , kats128 , kats192) where
 
 kats128 :: [(Integer , Integer , Integer)]
 kats128 = [(0xf08d4b18cd49173d6bca39108c977a23,
@@ -3004,8 +3004,8 @@ kats128 = [(0xf08d4b18cd49173d6bca39108c977a23,
 
 
   
-kats :: [(Integer , Integer , Integer)]
-kats = [(0x94eeea8b1f2ada84adf103313eae6670952419a1f4b16d53d83f13e63c9f6b11,
+kats256 :: [(Integer , Integer , Integer)]
+kats256 = [(0x94eeea8b1f2ada84adf103313eae6670952419a1f4b16d53d83f13e63c9f6b11,
   0x94eeea8b1f2ada84adf103313eae6670,
   0x4bf7b31195fffffcda63d6f549c12610),
  (0xb853d8de94a5ac5bf164c6f0a08a723dbf1a4e1efbac86996facf488fed92204,

@@ -1,34 +1,17 @@
 {-# LANGUAGE DataKinds #-}
 module AESTesting where
 
--- import Prelude (($) , Integer , map , (.) , IO , putStrLn , (++) , (==))
 import ReWire
-import ReWire.Bits ((^) , lit)
-import ReWire.Finite (finite)
-import ReWire.Vectors (index , generate)
+import ReWire.Bits (lit)
 
-import ReWire.Interactive (dshow , hex , xshow)
-
-import Aes.Basic(KeySchedule,State,RoundKey,initState,finalState)
-import Aes.Operations.SubBytes(subbytes)
-import Aes.Operations.AddRoundKey(addRoundKey)
-import Aes.Operations.ShiftRows(shiftrows)
-import Aes.Operations.MixColumns(mixcolumns)
-import Aes.KeyExp.KeyExpansion256(keyexpand)
-
+import Aes.Basic(State,finalState)
 import Aes.Cipher128(encrypt128)
 import Aes.Cipher192(encrypt192)
 import Aes.Cipher256(encrypt256)
 import Aes.InvCipher256(decrypt256)
 
-import Aes.Test.TestingFunctions
-import Aes.KATs(kats,kats128,kats192)
-
-runkats :: [Bool]
-runkats = map (\ (k , t , a) -> a == (finalState $ encrypt256 k t)) tests
-  where
-   tests :: [(W 256 , W 128 , W 128)]
-   tests = map (\ (k , t , a) -> (lit k , lit t , lit a)) kats
+import Aes.Test.TestingFunctions(mkstate)
+import Aes.KATs(kats128,kats192,kats256)
 
 runkats128 :: [Bool]
 runkats128 = map (\ (k , t , a) -> a == (finalState $ encrypt128 k t)) tests
@@ -42,7 +25,12 @@ runkats192 = map (\ (k , t , a) -> a == (finalState $ encrypt192 k t)) tests
    tests :: [(W 192 , W 128 , W 128)]
    tests = map (\ (k , t , a) -> (lit k , lit t , lit a)) kats192
 
--- |
+runkats256 :: [Bool]
+runkats256 = map (\ (k , t , a) -> a == (finalState $ encrypt256 k t)) tests
+  where
+   tests :: [(W 256 , W 128 , W 128)]
+   tests = map (\ (k , t , a) -> (lit k , lit t , lit a)) kats256
+
 -- | Here's a Cryptol example KAT. Defined in test/Testing.cry
 -- |
 -- // https://csrc.nist.gov/CSRC/media/Projects/Cryptographic-Standards-and-Guidelines/documents/examples/AES_Core256.pdf

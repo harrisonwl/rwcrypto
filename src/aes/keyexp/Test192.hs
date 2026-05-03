@@ -8,9 +8,9 @@ import ReWire.Finite
 import ReWire.Vectors hiding (update)
 
 import Aes.ExtensionalSemantics
-import Aes.Basic(Key, KeySchedule, splitkey128 , joinkey,finalState)
-import Aes.KeyExp.KeyExpansion128(keyexpand , ks0) 
-import Aes.Cipher128(encrypt128)
+import Aes.Basic(Key, KeySchedule, splitkey192, joinkey,finalState)
+import Aes.KeyExp.KeyExpansion192(keyexpand , ks0) 
+--import Aes.Cipher128(encrypt128)
 import Aes.Test.TestingFunctions(ps)
 
 -- import Aes.KeyExp.KeyExpansion256(ks0 , keyexpand) 
@@ -19,110 +19,74 @@ import Aes.Test.TestingFunctions(ps)
 import Aes.KeyExp.KATs 
 import ReWire.Interactive(Pretty , pretty , pp , xshow)
 
-k128 :: W 128
-k128 = lit 0x2b7e151628aed2a6abf7158809cf4f3c
-
-txt :: W 128
-txt = lit 0x3243f6a8885a308d313198a2e0370734
-
+k192 :: W 192
+k192 = lit 0x8e73b0f7da0e6452c810f32b809079e562f8ead2522c6b7b
 
 ks :: KeySchedule
-ks = keyexpand k128
+ks = keyexpand k192
+
+-- | Checks out against Appedix A.2, NIST-FIPS 197-upd
+ans :: [String]
+-- ans = P.map (xshow . (\ i -> ks `index` (finite i))) [0..51]
+ans = [ "0x8E73B0F7"
+      , "0xDA0E6452"
+      , "0xC810F32B"
+      , "0x809079E5"
+      , "0x62F8EAD2"
+      , "0x522C6B7B"
+      , "0xFE0C91F7" -- 6
+      , "0x2402F5A5"
+      , "0xEC12068E"
+      , "0x6C827F6B"
+      , "0x0E7A95B9"
+      , "0x5C56FEC2"
+      , "0x4DB7B4BD"
+      , "0x69B54118"
+      , "0x85A74796"
+      , "0xE92538FD"
+      , "0xE75FAD44"
+      , "0xBB095386"
+      , "0x485AF057"
+      , "0x21EFB14F"
+      , "0xA448F6D9"
+      , "0x4D6DCE24"
+      , "0xAA326360"
+      , "0x113B30E6" --
+      , "0xA25E7ED5"
+      , "0x83B1CF9A"
+      , "0x27F93943"
+      , "0x6A94F767"
+      , "0xC0A69407"
+      , "0xD19DA4E1"
+      , "0xEC1786EB"
+      , "0x6FA64971" ----
+      , "0x485F7032"
+      , "0x22CB8755"
+      , "0xE26D1352"
+      , "0x33F0B7B3"
+      , "0x40BEEB28"
+      , "0x2F18A259"
+      , "0x6747D26B"
+      , "0x458C553E"
+      , "0xA7E1466C"
+      , "0x9411F1DF"
+      , "0x821F750A"
+      , "0xAD07D753"
+      , "0xCA400538"
+      , "0x8FCC5006"
+      , "0x282D166A"
+      , "0xBC3CE7B5"
+      , "0xE98BA06F"
+      , "0x448C773C"
+      , "0x8ECC7204"
+      , "0x01002202"]
+
+
+-- txt :: W 128
+-- txt = lit 0x3243f6a8885a308d313198a2e0370734
 
 go :: Integer -> IO ()
 go i = pretty $ ks `index` (finite i)
-
-ans' :: [String]
--- ans' = P.map (xshow . (\ i -> ks `index` (finite i))) [0..43]
-ans' = [ "0x2B7E1516"
-       , "0x28AED2A6"
-       , "0xABF71588"
-       , "0x09CF4F3C"
-       , "0xA0FAFE17"
-       , "0x88542CB1"
-       , "0x23A33939"
-       , "0x2A6C7605"
-       , "0xF2C295F2"
-       , "0x7A96B943"
-       , "0x5935807A"
-       , "0x7359F67F"
-       , "0x3D80477D"
-       , "0x4716FE3E"
-       , "0x1E237E44"
-       , "0x6D7A883B"
-       , "0xEF44A541"
-       , "0xA8525B7F"
-       , "0xB671253B"
-       , "0xDB0BAD00"
-       , "0xD4D1C6F8"
-       , "0x7C839D87"
-       , "0xCAF2B8BC"
-       , "0x11F915BC"
-       , "0x6D88A37A"
-       , "0x110B3EFD"
-       , "0xDBF98641"
-       , "0xCA0093FD"
-       , "0x4E54F70E"
-       , "0x5F5FC9F3"
-       , "0x84A64FB2"
-       , "0x4EA6DC4F"
-       , "0xEAD27321"
-       , "0xB58DBAD2"
-       , "0x312BF560"
-       , "0x7F8D292F" -- 35
-       , "0xAC7766F3"
-       , "0x19FADC21"
-       , "0x28D12941"
-       , "0x575C006E"
-       , "0xD014F9A8" -- 40
-       , "0xC9EE2589"
-       , "0xE13F0CC8"
-       , "0xB6630CA6"]
-
-ans = [ "0x2B7E1516"
-      , "0x28AED2A6"
-      , "0xABF71588"
-      , "0x09CF4F3C" --  3
-      , "0xA0FAFE17"
-      , "0x88542CB1" --  5
-      , "0x23A33939"
-      , "0x2A6C7605"
-      , "0xF2C295F2"
-      , "0x7A96B943"
-      , "0x5935807A" -- 10
-      , "0x7359F67F"
-      , "0x3D80477D"
-      , "0x4716FE3E"
-      , "0x1E237E44"
-      , "0x6D7A883B" -- 15
-      , "0xEF44A541"
-      , "0xA8525B7F"
-      , "0xB671253B"
-      , "0xDB0BAD00"
-      , "0xD4D1C6F8" -- 20
-      , "0x7C839D87"
-      , "0xCAF2B8BC"
-      , "0x11F915BC"
-      , "0x6D88A37A"
-      , "0x110B3EFD" -- 25
-      , "0xDBF98641"
-      , "0xCA0093FD"
-      , "0x4E54F70E"
-      , "0x5F5FC9F3"
-      , "0x84A64FB2" -- 30
-      , "0x4EA6DC4F"
-      , "0xEAD27321"
-      , "0xB58DBAD2"
-      , "0x312BF560"
-      , "0x7F8D292F" -- 35
-      , "0x377766F3"
-      , "0x82FADC21"
-      , "0xB3D12941"
-      , "0xCC5C006E"
-      , "0xFD14F9B8" -- 40
-      , "0x7FEE2599"
-      , "0xCC3F0CD8"
-      , "0x00630CB6" ]
 
 -- | splitkey128 works.
 -- k0 , k1 , k2 , k3 :: W 32

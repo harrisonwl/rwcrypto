@@ -1,5 +1,5 @@
 {-# LANGUAGE DataKinds #-}
---module Aes.RW_AES256 where
+-- module Aes.RW_AES256 where
 
 import Prelude as P hiding ((-) , (*) , (<) , (^) , (/) , head , tail , round , (<>))
 import ReWire
@@ -7,8 +7,8 @@ import ReWire.Bits as RB hiding ((<) , (*))
 import ReWire.Vectors hiding (update)
 import ReWire.Finite
 
-import Aes.Basic(splitkey,Key,KeySchedule,State,RoundKey , initState)
-import Aes.KeyExp.KeyExpansion256(rnd , RF , ks0 , initKeySched256 , roundkey)
+import Aes.Basic(splitkey , Key , KeySchedule , State , RoundKey , roundkey , initState)
+import Aes.KeyExp.KeyExpansion256(rnd , RF , ks0 , initKeySched256)
 
 import Aes.Operations.AddRoundKey (addRoundKey)
 import Aes.Operations.SubBytes (subbytes)
@@ -21,7 +21,11 @@ type ST s     = StateT s Identity
 type Re i s o = ReacT i o (ST s)
 
 type RegF     = (KeySchedule, Finite 60 , State)
--- addRK :: addRoundKey :: RoundKey -> State -> State
+
+initStateM :: W 128 -> StateT RegF Identity ()
+initStateM inp = do
+                   (ks , c , _) <- get
+                   put (ks , c , initState inp)
 
 addRoundKeyM :: RoundKey -> StateT RegF Identity ()
 addRoundKeyM rk = do
@@ -82,27 +86,31 @@ round = do
 
 -- loop :: I (W 32) -> StateT RF Identity ()
 loop :: I -> Re I RegF (Maybe (W 32)) ()
-loop M256    = do
-                  lift $ put (ks0 , finite 0 , initState (lit 0))
-                  i <- signal Nothing
-                  loop i
-loop (Key k) = do
-                  lift (put (ks , finite 8, initState (lit 0)))
-                  i <- signal Nothing
-                  loop i
+loop M256       = do
+                     lift $ put (ks0 , finite 0 , initState (lit 0))
+                     i <- signal Nothing
+                     loop i
+loop (Key k)    = do
+                     lift (put (ks , finite 8, initState (lit 0)))
+                     i <- signal Nothing
+                     loop i
   where
     ks :: KeySchedule
     ks = initKeySched256 k
-loop KERound = do
-                  lift round
-                  i <- signal Nothing
-                  loop i
-loop Round0  = do
-                  lift $ do
-                            rk <- roundkeyM (finite 0)
-                            addRoundKeyM rk                  
-                  i <- signal Nothing
-                  loop i
+loop (Txt inp)  = do
+                     lift (initStateM inp)
+                     i <- signal Nothing
+                     loop i
+loop KERound    = do
+                     lift round
+                     i <- signal Nothing
+                     loop i
+loop Round0     = do
+                     lift $ do
+                               rk <- roundkeyM (finite 0)
+                               addRoundKeyM rk                  
+                     i <- signal Nothing
+                     loop i
 loop (Roundi j) = do
                     lift $ do
                               rk <- roundkeyM j
@@ -120,11 +128,6 @@ loop Roundf     = do
                               addRoundKeyM rk                  
                     i <- signal Nothing
                     loop i
-
-    -- finalRound :: State -> State
-    -- finalRound s = addRoundKey (roundkey w 14) 
-    --                            (shiftrows (subbytes s))
-
 
 loop Cont    = do
                   i <- signal Nothing

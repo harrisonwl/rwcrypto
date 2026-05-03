@@ -42,15 +42,10 @@ import Aes.Operations.RotWord(rotword)
 -- | the first 44 elements are used. Should probably trim that.
 keyexpand :: W 128 -> KeySchedule
 keyexpand k = fst . rnd . rnd . rnd . rnd . rnd .
-                    rnd . rnd . rnd . rnd . rnd .
-                    rnd . rnd . rnd $ (initKeySched128 k , finite 4)
+                    rnd . rnd . rnd . rnd . rnd {- .
+                    rnd . rnd . rnd -} $ (initKeySched128 k , finite 4)
 
 type RF          = (KeySchedule, Finite 44)
-
--- | For AES-128, Nb * (Nr + 1) = 4 * (10 + 1) = 44, hence the key schedule has 60 elements:
--- |
--- | Note that we haven't changed the size of KeySchedule.
--- | 
 
 initKeySched128 :: W 128 -> KeySchedule
 initKeySched128 k = splitkey128 k ReWire.Vectors.++ ks56
