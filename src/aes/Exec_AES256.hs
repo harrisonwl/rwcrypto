@@ -1,8 +1,8 @@
 {-# LANGUAGE DataKinds #-}
--- module Aes.RW_AES256 where
+module Aes.Exec_AES256 where
 
 import Prelude as P hiding ((-) , (*) , (<) , (^) , (/) , head , tail , round , (<>))
-import ReWire
+import ReWire hiding (put , get , signal , lift , extrude)
 import ReWire.Bits as RB hiding ((<) , (*))
 import ReWire.Vectors hiding (update)
 import ReWire.Finite
@@ -12,11 +12,12 @@ import Aes.Operations.AddRoundKey (addRoundKey)
 import Aes.Operations.SubBytes (subbytes)
 import Aes.Operations.ShiftRows (shiftrows)
 import Aes.Operations.MixColumns (mixcolumns)
+import Aes.ExtensionalSemantics
 
 -- | N.b., using the ReWire definitions for these transformers
 -- | and not the "semantic" definitions from AES.ExtensionalSemantics
-type ST s     = StateT s Identity
-type Re i s o = ReacT i o (ST s)
+-- type ST s     = StateT s Identity
+-- type Re i s o = ReacT i o (ST s)
 type RegF     = (KeySchedule, Finite 60 , State)
 
 initStateM :: W 128 -> ST RegF ()
@@ -131,6 +132,8 @@ loop Roundf     = do
 loop Cont    = do
                   i <- signal Nothing
                   loop i
-                  
-start :: ReacT I (Maybe (W 128)) Identity ()
-start = extrude (loop Cont) (ks0 , finite 0 , initState (lit 0))
+
+start :: Stream I -> Stream (I, RegF, Maybe (W 128))
+start = re_inf (loop Cont) (Cont , s0 , Nothing)
+  where
+    s0 = (ks0 , finite 0 , initState (lit 0))
