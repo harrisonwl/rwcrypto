@@ -17,6 +17,10 @@ import Control.Monad.Resumption.Reactive
 infixr 5 :<
 data Stream a = a :< Stream a
 
+infix 6 <<
+[] << str       = str
+(a : as) << str = a :< (as << str)
+
 instance Show a => Show (Stream a) where
   show (a0 :< _) = "[" ++ show a0 ++ " :< ...]"
 
@@ -146,3 +150,9 @@ step :: Re i s o a -> i -> s -> Either (a, i, s) (Re i s o a, s , o)
 step (P x) i' s = case runST x s of
   (Left a , si)         -> Left (a , i' , si)    -- si = intermediate store
   (Right (o' , k) , s') -> Right (k i', s' , o')
+
+stepper :: Re i s o a -> (i , s , o) -> [i] -> WriterPlus (i , s , o) ()
+stepper _ iso@(i0 , s0 , o0) []       = iso :+> ()
+stepper d iso@(i0 , s0 , o0) (i : is) = case step d i s0 of
+                Left _               -> iso :+> ()
+                Right (d' , s' , o') -> iso :> stepper d' (i , s' , o') is

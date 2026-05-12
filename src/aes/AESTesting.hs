@@ -3,15 +3,21 @@ module AESTesting where
 
 import ReWire
 import ReWire.Bits (lit)
+import ReWire.Finite (finite)
 
-import Aes.Basic(State,finalState)
+import Aes.Basic(State,finalState,initState)
 import Aes.Cipher128(encrypt128)
 import Aes.Cipher192(encrypt192)
 import Aes.Cipher256(encrypt256)
+import Aes.ImpCipher256(encrypt256M , RegF , encrypt256hw )
 import Aes.InvCipher256(decrypt256)
+import Aes.KeyExp.KeyExpansion256 (keyexpand , ks0)
 
 import Aes.Test.TestingFunctions(mkstate)
 import Aes.KATs(kats128,kats192,kats256)
+
+import Aes.ExtensionalSemantics
+import ReWire.Interactive(xshow)
 
 runkats128 :: [Bool]
 runkats128 = map (\ (k , t , a) -> a == (finalState $ encrypt128 k t)) tests
@@ -30,6 +36,30 @@ runkats256 = map (\ (k , t , a) -> a == (finalState $ encrypt256 k t)) tests
   where
    tests :: [(W 256 , W 128 , W 128)]
    tests = map (\ (k , t , a) -> (lit k , lit t , lit a)) kats256
+
+runkats256M :: [Bool]
+runkats256M = map (\ (k , t , a) -> a == (fst $ runST (encrypt256M k t) s0)) tests
+   where
+     tests :: [(W 256 , W 128 , W 128)]
+     tests = map (\ (k , t , a) -> (lit k , lit t , lit a)) kats256
+     s0 :: RegF
+     s0 = (ks0 , {- finite 0 -} undefined , initState (lit 0))
+
+-- | runs the hardware model against the KATs.
+runkats256HW :: [Bool]
+runkats256HW = map (\ (k , t , a) -> Just a == last (encrypt256hw k t)) tests
+   where
+
+     tests :: [(W 256 , W 128 , W 128)]
+     tests = map (\ (k , t , a) -> (lit k , lit t , lit a)) kats256
+
+     s0 :: RegF
+     s0 = (ks0 , {- finite 0 -} undefined , initState (lit 0))
+
+     last :: WriterPlus (i , s , o) a -> o
+     last (_ :> ws)       = last ws
+     last ((i,s,o) :+> _) = o
+
 
 -- | Here's a Cryptol example KAT. Defined in test/Testing.cry
 -- |
@@ -95,6 +125,15 @@ plaintext = lit 0x6BC1BEE22E409F96E93D7E117393172A
 
 crypttext :: W 128
 crypttext = lit 0xf3eed1bdb5d2a03c064b5a7e3db181f8
+----(Cont,"Just 0xF3EED1BDB5D2A03C064B5A7E3DB181F8")
+
+mayshow Nothing = "Nothing"
+mayshow (Just w) = "Just " ++ xshow w
+
+-- pam :: WriterPlus (i , s , o) a -> [(i,o)]
+pam ((i,s,o) :> ws) = (i,mayshow o) : pam ws
+pam ((i,s,o) :+> _) = (i,mayshow o) : []
+
 
 -- decrypt keyex crypttext
 -- 0x6bc1bee22e409f96e93d7e117393172a
