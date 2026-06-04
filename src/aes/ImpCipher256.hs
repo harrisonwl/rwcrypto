@@ -1,7 +1,7 @@
 {-# LANGUAGE DataKinds #-}
-module Aes.ImpCipher256( encrypt256M , RegF , encrypt256hw ) where
+module Aes.ImpCipher256( encrypt256 , encrypt256M , RegF , encrypt256hw ) where
 
-import Prelude (($) , foldl , fst , Maybe(..) , Show(..) , (++))
+import Prelude (($) , foldl , fst , Maybe(..) , Show(..) , (++) , (.) , otherwise)
 import ReWire hiding (put , get , signal , lift , extrude)
 import ReWire.Bits ((^) , lit)
 import ReWire.Vectors (index, generate)
@@ -32,8 +32,8 @@ import ReWire.Interactive (xshow)
 -- 
 -- This corresponds to Specification.cry's encrypt
 -- 
-encrypt256 :: W 256 -> W 128 -> State
-encrypt256 k inp = cipher (initState inp) (keyexpand k)
+encrypt256 :: W 256 -> W 128 -> W 128
+encrypt256 k inp = finalState $ cipher (initState inp) (keyexpand k)
 
 -- | The main Cipher function for AES-256 as defined in Figure 5 of NIST FIPS 197
 -- Cipher(byte in[4*Nb], byte out[4*Nb], word w[Nb*(Nr+1)])
@@ -59,28 +59,6 @@ cipher state w = finalRound (rounds state w)
 
 type RegF     = (KeySchedule, Finite 15 , State)
 
--- -- | works, but is kruft
--- encrypt256M' :: Key -> W 128 -> ST RegF (W 128)
--- encrypt256M' k pt = do
---                       keyexpandM k
---                       initStateM pt
---                       initialRoundM
---                       roundFunctionM 1
---                       roundFunctionM 2
---                       roundFunctionM 3
---                       roundFunctionM 4
---                       roundFunctionM 5
---                       roundFunctionM 6
---                       roundFunctionM 7
---                       roundFunctionM 8
---                       roundFunctionM 9
---                       roundFunctionM 10
---                       roundFunctionM 11
---                       roundFunctionM 12
---                       roundFunctionM 13
---                       finalRoundM
---                       answer
-
 encrypt256M :: Key -> W 128 -> ST RegF (W 128)
 encrypt256M k pt = do
                       keyexpandM k
@@ -102,11 +80,6 @@ encrypt256M k pt = do
                       roundM
                       answer
 
-incRC :: ST RegF ()
-incRC = do
-           (ks,i,s) <- get
-           put (ks, i+1 , s)
-           
 roundM :: ST RegF ()
 roundM = do
             (_,i,_) <- get
@@ -129,68 +102,93 @@ roundM = do
                   subbytesM
                   shiftrowsM 
                   addRoundKeyM rk
+   where
+
+      incRC :: ST RegF ()
+      -- incRC = do
+      --           (ks,i,s) <- get
+      --           put (ks, i+1 , s)
+      incRC = operRF (\ (ks , i , s) -> (ks , i+1 , s))
+
+      addRoundKeyM :: RoundKey -> ST RegF ()
+      -- addRoundKeyM rk = do
+      --                     (ks , c , s) <- get
+      --                     put (ks , c , addRoundKey rk s)
+      addRoundKeyM rk = oper (addRoundKey rk)
+
+      roundkeyM :: Finite 15 -> ST RegF RoundKey
+      -- roundkeyM ix    = do
+      --                     (ks , _ , _) <- get
+      --                     returnS (roundkey ks ix)
+      roundkeyM ix = calcRF (\ (ks , _ , _) -> roundkey ks ix)
+
+      subbytesM :: ST RegF ()
+      -- subbytesM   = do
+      --                 (ks , c , s) <- get
+      --                 put (ks , c , subbytes s)
+      subbytesM   = oper subbytes
+
+      shiftrowsM :: ST RegF ()
+      -- shiftrowsM  = do
+      --                 (ks , c , s) <- get
+      --                 put (ks , c , shiftrows s)
+      shiftrowsM  = oper shiftrows
+
+      mixcolumnsM :: ST RegF ()
+      -- mixcolumnsM = do
+      --                 (ks , c , s) <- get
+      --                 put (ks , c , mixcolumns s)
+      mixcolumnsM = oper mixcolumns
+
+--
+--
+--
+
+oper :: (State -> State) -> ST RegF ()
+oper f = do
+            (ks , i , s) <- get
+            put (ks , i , f s)
+             
+calc :: (State -> a) -> ST RegF a
+calc f = do
+            (_ , _ , s) <- get
+            returnS (f s)
+
+operRF :: (RegF -> RegF) -> ST RegF ()
+operRF f = do
+             rf <- get
+             put (f rf)
+
+calcRF :: (RegF -> a) -> ST RegF a
+calcRF f = do
+              rf <- get
+              returnS (f rf)
 
 
-initialRoundM :: ST RegF ()
-initialRoundM        = do
-                          rk <- roundkeyM 0
-                          addRoundKeyM rk
-
-roundFunctionM :: Finite 15 -> ST RegF ()
-roundFunctionM round = do
-                          rk <- roundkeyM round
-                          subbytesM
-                          shiftrowsM 
-                          mixcolumnsM
-                          addRoundKeyM rk
-
-finalRoundM :: ST RegF ()
-finalRoundM          = do
-                          rk <- roundkeyM 14
-                          subbytesM
-                          shiftrowsM 
-                          addRoundKeyM rk
-
-
-keyexpandM :: Key -> ST RegF ()
-keyexpandM k = do
-                  (_ , c , s) <- get
-                  put (keyexpand k , c , s)
+--
+--
+--
+           
+subbytesM :: ST RegF ()
+subbytesM = oper subbytes
 
 initStateM :: W 128 -> ST RegF ()
-initStateM inp = do
-                   (ks , _ , _) <- get
-                   put (ks , finite 0 , initState inp)
+-- initStateM inp = do
+--                    (ks , _ , _) <- get
+--                    put (ks , finite 0 , initState inp)
+initStateM inp = operRF (\ (ks , _ , _) -> (ks , finite 0 , initState inp))
 
-addRoundKeyM :: RoundKey -> ST RegF ()
-addRoundKeyM rk = do
-                    (ks , c , s) <- get
-                    put (ks , c , addRoundKey rk s)
-
-roundkeyM :: Finite 15 -> ST RegF RoundKey
-roundkeyM ix    = do
-                    (ks , _ , _) <- get
-                    returnS (roundkey ks ix)
-
-subbytesM :: ST RegF ()
-subbytesM   = do
-                 (ks , c , s) <- get
-                 put (ks , c , subbytes s)
-
-shiftrowsM :: ST RegF ()
-shiftrowsM  = do
-                 (ks , c , s) <- get
-                 put (ks , c , shiftrows s)
-
-mixcolumnsM :: ST RegF ()
-mixcolumnsM = do
-                 (ks , c , s) <- get
-                 put (ks , c , mixcolumns s)
+keyexpandM :: Key -> ST RegF ()
+-- keyexpandM k   = do
+--                    (_ , c , s) <- get
+--                    put (keyexpand k , c , s)
+keyexpandM k   = operRF (\ (_ , c , s) -> (keyexpand k , c , s))
 
 answer :: ST RegF (W 128)
-answer      = do
-                 (_ , _ , s) <- get
-                 returnS (finalState s)
+-- answer      = do
+--                  (_ , _ , s) <- get
+--                  returnS (finalState s)
+answer = calc finalState
 
 ---
 --- Making HW out of this.
@@ -210,18 +208,93 @@ instance Show I where
   show Cont    = "Cont"
   
 
+ke :: Key -> RegF -> RegF
+ke k   = (\ (_ , c , s) -> (keyexpand k , c , s))
+
+is :: W 128 -> RegF -> RegF
+is inp = (\ (ks , _ , _) -> (ks , finite 0 , initState inp))
+
+incrc :: RegF -> RegF
+incrc  = (\ (ks , i , s) -> (ks , i+1 , s))
+
+ark :: RoundKey -> RegF -> RegF
+ark rk = \ (ks , i , s) -> (ks , i , addRoundKey rk s)
+
+rndk :: Finite 15 -> RegF -> RoundKey
+rndk ix = \ (ks , _ , _) -> roundkey ks ix
+
+sbs , shrs , mxcs :: RegF -> RegF
+sbs    = \ (ks , i , s) -> (ks , i , subbytes s)
+shrs   = \ (ks , i , s) -> (ks , i , shiftrows s)
+mxcs   = \ (ks , i , s) -> (ks , i , mixcolumns s)
+sbs' :: (State -> State) -> RegF -> RegF
+sbs' subbytes = \ (ks , i , s) -> (ks , i , subbytes s)
+
+
+loop :: I -> Re I RegF (Maybe (W 128)) ()
 loop (Key k)   = do
                     lift (keyexpandM k)
                     i <- signal Nothing
                     loop i
+  where
+      keyexpandM :: Key -> ST RegF ()
+      keyexpandM k   = operRF (\ (_ , c , s) -> (keyexpand k , c , s))
+
 loop (Txt inp) = do
                     lift (initStateM inp)
                     i <- signal Nothing
                     loop i
+   where
+     initStateM :: W 128 -> ST RegF ()
+     initStateM inp = operRF (\ (ks , _ , _) -> (ks , finite 0 , initState inp))
+
 loop Round     = do
                     lift roundM
                     i <- signal Nothing
                     loop i
+   where
+
+     roundM :: ST RegF ()
+     roundM = do
+       (_,i,_) <- get
+       if i == finite 0 then
+          do
+            rk <- roundkeyM (finite 0)
+            addRoundKeyM rk
+            incRC
+       else if i < finite 14 then
+          do
+            rk <- roundkeyM i
+            subbytesM
+            shiftrowsM 
+            mixcolumnsM
+            addRoundKeyM rk
+            incRC
+       else
+          do
+            rk <- roundkeyM 14
+            subbytesM
+            shiftrowsM 
+            addRoundKeyM rk
+
+     incRC :: ST RegF ()
+     incRC = operRF (\ (ks , i , s) -> (ks , i+1 , s))
+
+     addRoundKeyM :: RoundKey -> ST RegF ()
+     addRoundKeyM rk = oper (addRoundKey rk)
+
+     roundkeyM :: Finite 15 -> ST RegF RoundKey
+     roundkeyM ix = calcRF (\ (ks , _ , _) -> roundkey ks ix)
+
+     subbytesM :: ST RegF ()
+     subbytesM   = oper subbytes
+
+     shiftrowsM :: ST RegF ()
+     shiftrowsM  = oper shiftrows
+
+     mixcolumnsM :: ST RegF ()
+     mixcolumnsM = oper mixcolumns
+
 loop Cont      = do
                     i <- signal Nothing
                     loop i
@@ -229,6 +302,16 @@ loop Answer    = do
                     ct <- lift answer
                     i <- signal (Just ct)
                     loop i
+   where
+     answer :: ST RegF (W 128)
+     answer = calc finalState
+
+foobar :: RegF -> RegF
+foobar rf@(_ , i , _) | i == 0  = rf
+                      | i < 14  = rf
+                      | i == 14 = rf
+                      | otherwise = rf
+
 
 -- start = re_inf (loop Cont) (Cont , s0 , Nothing)
 --   where
@@ -262,3 +345,46 @@ aes256 k pt = Key k
             : Answer
             : Cont : []
                          
+
+-- -- | works, but is kruft
+-- encrypt256M' :: Key -> W 128 -> ST RegF (W 128)
+-- encrypt256M' k pt = do
+--                       keyexpandM k
+--                       initStateM pt
+--                       initialRoundM
+--                       roundFunctionM 1
+--                       roundFunctionM 2
+--                       roundFunctionM 3
+--                       roundFunctionM 4
+--                       roundFunctionM 5
+--                       roundFunctionM 6
+--                       roundFunctionM 7
+--                       roundFunctionM 8
+--                       roundFunctionM 9
+--                       roundFunctionM 10
+--                       roundFunctionM 11
+--                       roundFunctionM 12
+--                       roundFunctionM 13
+--                       finalRoundM
+--                       answer
+
+-- finalRoundM :: ST RegF ()
+-- finalRoundM          = do
+--                           rk <- roundkeyM 14
+--                           subbytesM
+--                           shiftrowsM 
+--                           addRoundKeyM rk
+
+
+-- initialRoundM :: ST RegF ()
+-- initialRoundM        = do
+--                           rk <- roundkeyM 0
+--                           addRoundKeyM rk
+
+-- roundFunctionM :: Finite 15 -> ST RegF ()
+-- roundFunctionM round = do
+--                           rk <- roundkeyM round
+--                           subbytesM
+--                           shiftrowsM 
+--                           mixcolumnsM
+--                           addRoundKeyM rk

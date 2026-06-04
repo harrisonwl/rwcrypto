@@ -8,8 +8,8 @@ import ReWire.Finite (finite)
 import Aes.Basic(State,finalState,initState)
 import Aes.Cipher128(encrypt128)
 import Aes.Cipher192(encrypt192)
-import Aes.Cipher256(encrypt256)
-import Aes.ImpCipher256(encrypt256M , RegF , encrypt256hw )
+-- import Aes.Cipher256(encrypt256)
+import Aes.ImpCipher256(encrypt256 , encrypt256M , RegF , encrypt256hw )
 import Aes.InvCipher256(decrypt256)
 import Aes.KeyExp.KeyExpansion256 (keyexpand , ks0)
 
@@ -32,7 +32,7 @@ runkats192 = map (\ (k , t , a) -> a == (finalState $ encrypt192 k t)) tests
    tests = map (\ (k , t , a) -> (lit k , lit t , lit a)) kats192
 
 runkats256 :: [Bool]
-runkats256 = map (\ (k , t , a) -> a == (finalState $ encrypt256 k t)) tests
+runkats256 = map (\ (k , t , a) -> a == (encrypt256 k t)) tests
   where
    tests :: [(W 256 , W 128 , W 128)]
    tests = map (\ (k , t , a) -> (lit k , lit t , lit a)) kats256
@@ -138,11 +138,11 @@ pam ((i,s,o) :+> _) = (i,mayshow o) : []
 -- decrypt keyex crypttext
 -- 0x6bc1bee22e409f96e93d7e117393172a
 
-go :: W 256 -> W 128 -> W 128
-go k w = finalState (encrypt256 k w)
+-- go :: W 256 -> W 128 -> W 128
+-- go k w = finalState (encrypt256 k w)
 
 thereandback :: W 256 -> W 128 -> W 128
-thereandback k w = finalState $ decrypt256 k (encrypt256 k w)
+thereandback k w = finalState $ decrypt256 k (initState (encrypt256 k w))
 
 -- | Corresponding to msgToState are:
 -- | initState  :: W 128 -> State
