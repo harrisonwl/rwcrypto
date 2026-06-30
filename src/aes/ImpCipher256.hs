@@ -1,7 +1,7 @@
 {-# LANGUAGE DataKinds #-}
 module Aes.ImpCipher256( encrypt256 , encrypt256M , RegF , encrypt256hw ) where
 
-import Prelude (($) , foldl , fst , Maybe(..) , Show(..) , (++) , (.) , otherwise)
+import Prelude (($) , foldl , fst , Maybe(..) , Show(..) , (++) , (.) , otherwise , Integer)
 import ReWire hiding (put , get , signal , lift , extrude)
 import ReWire.Bits ((^) , lit)
 import ReWire.Vectors (index, generate)
@@ -199,6 +199,14 @@ data I   = Key (W 256)
          | Round
          | Answer
          | Cont
+
+test :: I -> Integer
+test = \ i -> case i of
+                   Key _  -> 0
+                   Txt _  -> 1
+                   Round  -> 2
+                   Answer -> 3
+                   Cont   -> 4
 
 instance Show I where
   show (Key w) = "Key " ++ xshow w
