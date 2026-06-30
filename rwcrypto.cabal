@@ -1,6 +1,6 @@
 cabal-version: 2.2
 
--- This file has been generated from package.yaml by hpack version 0.38.2.
+-- This file has been generated from package.yaml by hpack version 0.38.3.
 --
 -- see: https://github.com/sol/hpack
 
@@ -46,10 +46,6 @@ library
       Salsa20.Test_RowRound
   other-modules:
       RW_Blake2b
-      One
-      Round1
-      Rounds
-      RW_Pi
       Paths_rwcrypto
   autogen-modules:
       Paths_rwcrypto
