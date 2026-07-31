@@ -137,3 +137,36 @@ mathematical building blocks defined for reuse:
   HKDF — the executable Cryptol lives inside code fences in those files.
 - SPHINCS+ (Round 3.1) doesn't have a single parameterized `Specification.cry`;
   each parameter set (`128f/128s/192f/192s/256f/256s`) is its own top-level file.
+
+## Total Count
+
+Counting the named algorithms above (excluding the shared math primitives in the
+"Common" section, which aren't standalone schemes):
+
+| Category | Count |
+| --- | --- |
+| Block ciphers | 14 |
+| Block cipher modes | 7 |
+| Authenticated encryption (AEAD) | 5 |
+| Stream ciphers | 5 |
+| MAC / KDF | 2 |
+| Hash functions | 7 |
+| Random bit generator (DRBG) | 1 |
+| Asymmetric ciphers / encryption schemes | 3 |
+| Key establishment (KEM / key agreement) | 2 |
+| Signature schemes | 8 |
+| **Total** | **54** |
+
+So **54 distinct cryptographic algorithms** are defined in cryptol-specs.
+
+A couple of caveats on how the count can shift depending on what you consider
+"an algorithm":
+
+- Algorithm *families* are counted once even though they ship many parameter
+  sets. For example, AES is one entry (not AES-128/192/256 separately), SHA-2 is
+  one entry (six digest sizes), and Simon/Speck are one entry each (ten
+  block/key-size variants apiece). If you count every instantiated parameter set
+  separately, the number would be several times larger.
+- If you also include the 4 shared mathematical primitives in the `Common/`
+  section (prime-field elliptic curves, Curve25519, NTT, GF arithmetic), the
+  total becomes **58**.
