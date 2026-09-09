@@ -1,11 +1,6 @@
 cabal-version: 2.2
 
-<<<<<<< HEAD
--- This file has been generated from package.yaml by hpack version 0.38.1.
-=======
--- This file has been generated from package.yaml by hpack version 0.38.3.
-
->>>>>>> 301997b7f6ad9915d2415526a3451914dc45fc1b
+-- This file has been generated from package.yaml by hpack version 0.39.6.
 --
 -- see: https://github.com/sol/hpack
 
@@ -30,78 +25,19 @@ source-repository head
 
 library
   exposed-modules:
-<<<<<<< HEAD
-      AddRoundKey
-      AESBasic
-      AESMixColumns
-      AESTesting
-      Cipher
-      Cipher128
-      Cipher256
-      KeyExpansion
-      MixColumns
-      Reference_AES
-      RotWord
-      ShiftRows
-      SubBytes
-      Pipelining
-      CubeHash8_1_256
-      Simplest
-      ColumnRound
-      DblPipe3
-      DblX3
-      DoubleRound
-      Encrypt
-      Expansion
-      HashSalsa20
-      LittleEndian
-      QuarterRound
-      RowRound
-      RW_DoublePipe2
-      RW_Salsa20Encrypt
-      Salsa20Basic
-      Test_ColumnRound
-      Test_DoubleRound
-      Test_Encrypt
-      Test_Expansion
-      Test_HashSalsa20
-      Test_LittleEndian
-      Test_QuarterRound
-      Test_RowRound
-      Testing
-=======
-      SHA256
       KeeLoq
       KeeLoqLearn
->>>>>>> 301997b7f6ad9915d2415526a3451914dc45fc1b
   other-modules:
       RW_Blake2b
-      One
-      Round1
-      Rounds
-      RW_Pi
-      BasicSHA256
-      Byte256
-      OperationalSHA256
-      TestCases
       Paths_rwcrypto
   autogen-modules:
       Paths_rwcrypto
   hs-source-dirs:
       src
-<<<<<<< HEAD
-      src/aes
-      src/pipelining
-      src/cubehash
-      src/salsa20
-  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints
-=======
-      src/blake2b
       src/sha3
-      src/sha256
+      src/blake2b
       src/keeloq
   ghc-options: -Wall -Wcompat -Widentities -Wno-name-shadowing -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints
->>>>>>> 301997b7f6ad9915d2415526a3451914dc45fc1b
   build-depends:
       base ==4.20.*
     , directory ==1.3.*

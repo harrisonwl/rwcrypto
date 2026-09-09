@@ -47,25 +47,17 @@ ghc-options:
 library:
   source-dirs:
     - src
-<<<<<<< HEAD
 #    - src/sha256
-    - src/aes
-    - src/pipelining
-    - src/cubehash
-    - src/salsa20
-=======
-    - src/blake2b
     - src/sha3
-    - src/sha256
-    - src/keeloq
-    # - src/salsa20
 #    - src/aes
-    # - src/pipelining
-    # - src/cubehash
->>>>>>> 301997b7f6ad9915d2415526a3451914dc45fc1b
+#    - src/pipelining
+#    - src/cubehash
+#    - src/salsa20
+    - src/blake2b
+    - src/keeloq
 #    - external/BinaryArithmetic/src
   exposed-modules:
-    - SHA256
+    # - SHA256
     # KeeLoq rolling-code models (src/keeloq). KeeLoq/KeeLoqLearn are plain
     # Haskell; RW_KeeLoqReceiver is ReWire source compiled with rwc (see
     # src/keeloq/README.md) and is intentionally left out of the GHC library.
