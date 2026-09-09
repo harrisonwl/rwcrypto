@@ -1,5 +1,5 @@
 {-# LANGUAGE DataKinds #-}
-module Pipelining.RW_Pipe123 where
+-- module Pipelining.RW_Pipe123 where
 
 import Prelude hiding ((+))
 import ReWire

@@ -46,9 +46,10 @@ library:
   source-dirs:
     - src
 #    - src/sha256
-    - src/salsa20
     - src/aes
     - src/pipelining
+    - src/cubehash
+    - src/salsa20
 #    - external/BinaryArithmetic/src
 
 executables:
