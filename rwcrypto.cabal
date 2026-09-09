@@ -1,6 +1,11 @@
 cabal-version: 2.2
 
+<<<<<<< HEAD
 -- This file has been generated from package.yaml by hpack version 0.38.1.
+=======
+-- This file has been generated from package.yaml by hpack version 0.38.3.
+
+>>>>>>> 301997b7f6ad9915d2415526a3451914dc45fc1b
 --
 -- see: https://github.com/sol/hpack
 
@@ -25,6 +30,7 @@ source-repository head
 
 library
   exposed-modules:
+<<<<<<< HEAD
       AddRoundKey
       AESBasic
       AESMixColumns
@@ -63,26 +69,49 @@ library
       Test_QuarterRound
       Test_RowRound
       Testing
+=======
+      SHA256
+      KeeLoq
+      KeeLoqLearn
+>>>>>>> 301997b7f6ad9915d2415526a3451914dc45fc1b
   other-modules:
+      RW_Blake2b
+      One
+      Round1
+      Rounds
+      RW_Pi
+      BasicSHA256
+      Byte256
+      OperationalSHA256
+      TestCases
       Paths_rwcrypto
   autogen-modules:
       Paths_rwcrypto
   hs-source-dirs:
       src
+<<<<<<< HEAD
       src/aes
       src/pipelining
       src/cubehash
       src/salsa20
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints
+=======
+      src/blake2b
+      src/sha3
+      src/sha256
+      src/keeloq
+  ghc-options: -Wall -Wcompat -Widentities -Wno-name-shadowing -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints
+>>>>>>> 301997b7f6ad9915d2415526a3451914dc45fc1b
   build-depends:
       base ==4.20.*
     , directory ==1.3.*
     , filepath ==1.5.*
     , ghc ==9.10.*
+    , ghc-typelits-natnormalise
     , lens ==5.3.*
     , monad-resumption
     , mtl
-    , rewire-user ==0.2.*
+    , rewire-user >=0.2
     , text ==2.1.*
     , vector
   default-language: Haskell2010
@@ -95,16 +124,17 @@ executable rwcrypto-exe
       Paths_rwcrypto
   hs-source-dirs:
       app
-  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
+  ghc-options: -Wall -Wcompat -Widentities -Wno-name-shadowing -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       base ==4.20.*
     , directory ==1.3.*
     , filepath ==1.5.*
     , ghc ==9.10.*
+    , ghc-typelits-natnormalise
     , lens ==5.3.*
     , monad-resumption
     , mtl
-    , rewire-user ==0.2.*
+    , rewire-user >=0.2
     , rwcrypto
     , text ==2.1.*
     , vector
@@ -119,16 +149,17 @@ test-suite rwcrypto-test
       Paths_rwcrypto
   hs-source-dirs:
       test
-  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
+  ghc-options: -Wall -Wcompat -Widentities -Wno-name-shadowing -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       base ==4.20.*
     , directory ==1.3.*
     , filepath ==1.5.*
     , ghc ==9.10.*
+    , ghc-typelits-natnormalise
     , lens ==5.3.*
     , monad-resumption
     , mtl
-    , rewire-user ==0.2.*
+    , rewire-user >=0.2
     , rwcrypto
     , text ==2.1.*
     , vector

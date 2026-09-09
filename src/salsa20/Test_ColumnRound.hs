@@ -1,9 +1,9 @@
 {-# LANGUAGE DataKinds #-}
-module Test_ColumnRound (alltests) where
+module Salsa20.Test_ColumnRound (alltests) where
 
-import Salsa20Basic()
-import Testing
-import ColumnRound(columnround)
+import Salsa20.Salsa20Basic()
+import Salsa20.Testing
+import Salsa20.ColumnRound(columnround)
 
 -----------------------------
 -- The columnround function from page 4 of

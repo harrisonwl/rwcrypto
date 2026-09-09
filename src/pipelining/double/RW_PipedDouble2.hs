@@ -3,10 +3,10 @@
 
 import Prelude hiding ((+))
 import ReWire
-import ReWire.Bits hiding (one)
+-- import ReWire.Bits hiding (one)
 
-import Salsa20Basic (Hex)
-import DoubleRound (doubleround)
+import Salsa20.Salsa20Basic (Hex)
+import Salsa20.DoubleRound (doubleround)
 
 data Inp a = Stall | Arg a
 data Out a = DC    | Val a

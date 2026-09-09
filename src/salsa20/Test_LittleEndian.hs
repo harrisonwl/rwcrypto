@@ -1,12 +1,12 @@
 {-# LANGUAGE DataKinds #-}
-module Test_LittleEndian(alltests) where
+module Salsa20.Test_LittleEndian(alltests) where
 
 import qualified Prelude as P
 import ReWire
 import ReWire.Bits (lit , (==))
 import ReWire.Vectors (slice)
-import Salsa20Basic (Quad)
-import LittleEndian(littleendian, inv_littleendian)
+import Salsa20.Salsa20Basic (Quad)
+import Salsa20.LittleEndian(littleendian, inv_littleendian)
 
 slice0 :: W 32 -> W 8
 slice0 w32 = slice (Proxy :: Proxy 0)  w32

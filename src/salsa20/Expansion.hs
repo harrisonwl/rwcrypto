@@ -1,12 +1,12 @@
 {-# LANGUAGE DataKinds #-}
-module Expansion (salsa20_k0k1, salsa20_k, salsa20_k0k1', salsa20_k', expandk0k1, expandk , there, back) where
+module Salsa20.Expansion (salsa20_k0k1, salsa20_k, salsa20_k0k1', salsa20_k', expandk0k1, expandk , there, back) where
 
 import Prelude hiding ((++)) 
 import ReWire 
 import ReWire.Bits (lit)
 import ReWire.Vectors (slice , (++))
-import Salsa20Basic (Quad, Hex, X16(..), X64(..))
-import HashSalsa20 (hash_salsa20,hash)
+import Salsa20.Salsa20Basic (Quad, Hex, X16(..), X64(..))
+import Salsa20.HashSalsa20 (hash_salsa20,hash)
 
 b2w32 :: W 8 -> W 8 -> W 8 -> W 8 -> W 32
 b2w32 x0 x1 x2 x3 = x0 ++ x1 ++ x2 ++ x3

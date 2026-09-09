@@ -1,10 +1,10 @@
 {-# LANGUAGE DataKinds #-}
-module LittleEndian(littleendian , inv_littleendian , littleendian') where
+module Salsa20.LittleEndian(littleendian , inv_littleendian , littleendian') where
 
 import Prelude hiding ((++))
 import ReWire
 import ReWire.Vectors (slice , (++))
-import Salsa20Basic (Quad)
+import Salsa20.Salsa20Basic (Quad)
 
 -----------------------------
 -- The littleendian function from page 6

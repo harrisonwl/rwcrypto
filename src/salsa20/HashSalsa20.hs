@@ -1,12 +1,12 @@
 {-# LANGUAGE DataKinds #-}
-module HashSalsa20(hash_salsa20,hash) where
+module Salsa20.HashSalsa20(hash_salsa20,hash) where
 
 import Prelude hiding ((+) , (<>)) 
 import ReWire
 import ReWire.Bits ((+))
-import Salsa20Basic (Hex, X16(..), X64(..))
-import DoubleRound (doubleround)
-import LittleEndian (littleendian,inv_littleendian,littleendian')
+import Salsa20.Salsa20Basic (Hex, X16(..), X64(..))
+import Salsa20.DoubleRound (doubleround)
+import Salsa20.LittleEndian (littleendian,inv_littleendian,littleendian')
 
 -----------------------------
 -- Salsa20 hash function from page 6-7

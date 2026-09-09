@@ -25,16 +25,18 @@ dependencies:
 - directory ^>= 1.3
 - filepath ^>= 1.5
 - lens ^>= 5.3
-- rewire-user ^>= 0.2
+- rewire-user >= 0.2
 - text ^>= 2.1
 - vector
 - monad-resumption
 - mtl
+- ghc-typelits-natnormalise
 
 ghc-options:
 - -Wall
 - -Wcompat
 - -Widentities
+- -Wno-name-shadowing
 - -Wincomplete-record-updates
 - -Wincomplete-uni-patterns
 - -Wmissing-export-lists
@@ -45,12 +47,51 @@ ghc-options:
 library:
   source-dirs:
     - src
+<<<<<<< HEAD
 #    - src/sha256
     - src/aes
     - src/pipelining
     - src/cubehash
     - src/salsa20
+=======
+    - src/blake2b
+    - src/sha3
+    - src/sha256
+    - src/keeloq
+    # - src/salsa20
+#    - src/aes
+    # - src/pipelining
+    # - src/cubehash
+>>>>>>> 301997b7f6ad9915d2415526a3451914dc45fc1b
 #    - external/BinaryArithmetic/src
+  exposed-modules:
+    - SHA256
+    # KeeLoq rolling-code models (src/keeloq). KeeLoq/KeeLoqLearn are plain
+    # Haskell; RW_KeeLoqReceiver is ReWire source compiled with rwc (see
+    # src/keeloq/README.md) and is intentionally left out of the GHC library.
+    - KeeLoq
+    - KeeLoqLearn
+    # Re-enable these together with their source-dirs (src/cubehash, src/salsa20):
+    # - Cubehash.CubeHash8_1_256
+    # - Cubehash.Simplest
+    # - Salsa20.ColumnRound
+    # - Salsa20.DoubleRound
+    # - Salsa20.Encrypt
+    # - Salsa20.Expansion
+    # - Salsa20.HashSalsa20
+    # - Salsa20.LittleEndian
+    # - Salsa20.QuarterRound
+    # - Salsa20.RowRound
+    # - Salsa20.Testing
+    # - Salsa20.Test_ColumnRound
+    # - Salsa20.Test_DoubleRound
+    # - Salsa20.Test_Encrypt
+    # - Salsa20.Test_Expansion
+    # - Salsa20.Test_HashSalsa20
+    # - Salsa20.Test_LittleEndian
+    # - Salsa20.Test_QuarterRound
+    # - Salsa20.Test_RowRound
+
 
 executables:
   rwcrypto-exe:

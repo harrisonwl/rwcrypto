@@ -1,13 +1,13 @@
 {-# LANGUAGE DataKinds #-}
-module RW_Salsa20Encrypt (start) where
+-- module Salsa20.RW_Salsa20Encrypt (start) where
 
 -- | This is intended to be compilable with rwc.
 
 import Prelude hiding ((^) , (+))
 import ReWire 
 import ReWire.Bits ( lit , (^) , (+) )
-import Salsa20Basic (Oct, Hex, pi64 , X16(..) )
-import Encrypt( encrypt )
+import Salsa20.Salsa20Basic (Oct, Hex, pi64 , X16(..) )
+import Salsa20.Encrypt( encrypt )
 
 -- |
 -- | This is for the Salsa20_k0k1 expansion function.
@@ -80,9 +80,10 @@ action (K1 k1)   = do
 action (Nonce v) = do
                       lift (putv v)
                       signal Ack
-action (Go mi)   = do
-                      mi' <- lift $ encryptM mi
-                      signal (Out mi')
+action (Go mi)   = -- signal Ack
+                    do
+                       mi' <- lift $ encryptM mi
+                       signal (Out mi')
   
 action Reset     = do
                       lift $ putctr (lit 0)

@@ -1,13 +1,13 @@
 {-# LANGUAGE DataKinds #-}
-module Encrypt (encrypt , encrypt' , factor64 , splice , mod64) where
+module Salsa20.Encrypt (encrypt , encrypt' , factor64 , splice , mod64) where
 
 import Prelude hiding ((^) , (++))
 import ReWire 
 import ReWire.Bits ((^))
 import ReWire.Vectors (slice)
 
-import Salsa20Basic (Oct, Hex, pi64, splice)
-import Expansion(salsa20_k0k1,salsa20_k0k1',back)
+import Salsa20.Salsa20Basic (Oct, Hex, pi64, splice)
+import Salsa20.Expansion(salsa20_k0k1,salsa20_k0k1',back)
 
 encrypt :: Hex (W 8) -> Hex (W 8) -> Oct (W 8) -> W 64 -> W 8 ->  W 8
 encrypt k0 k1 v i mi = mi ^ ((salsa20_k0k1 (k0 , k1) (splice v (factor64 i))) `pi64` (mod64 i))
