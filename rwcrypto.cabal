@@ -25,17 +25,20 @@ source-repository head
 
 library
   exposed-modules:
+      SHA256
       KeeLoq
       KeeLoqLearn
   other-modules:
-      RW_Blake2b
+      BasicSHA256
+      Byte256
+      OperationalSHA256
+      TestCases
       Paths_rwcrypto
   autogen-modules:
       Paths_rwcrypto
   hs-source-dirs:
       src
-      src/sha3
-      src/blake2b
+      src/sha256
       src/keeloq
   ghc-options: -Wall -Wcompat -Widentities -Wno-name-shadowing -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints
   build-depends:
@@ -47,6 +50,7 @@ library
     , lens ==5.3.*
     , monad-resumption
     , mtl
+    , rewire-base
     , rewire-user >=0.2
     , text ==2.1.*
     , vector
@@ -70,6 +74,7 @@ executable rwcrypto-exe
     , lens ==5.3.*
     , monad-resumption
     , mtl
+    , rewire-base
     , rewire-user >=0.2
     , rwcrypto
     , text ==2.1.*
@@ -95,6 +100,7 @@ test-suite rwcrypto-test
     , lens ==5.3.*
     , monad-resumption
     , mtl
+    , rewire-base
     , rewire-user >=0.2
     , rwcrypto
     , text ==2.1.*
