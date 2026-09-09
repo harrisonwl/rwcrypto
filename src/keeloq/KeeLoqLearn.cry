@@ -1,0 +1,72 @@
+// KeeLoq key-derivation ("learning") schemes, as a Cryptol spec.
+//
+// Companion to KeeLoq.cry (the cipher + rolling code) and KeeLoqLearn.hs (the
+// runnable model). This captures how a single 64-bit manufacturer key becomes a
+// per-fob device key under the three classic schemes, and states the properties
+// that make Normal/Secure learning usable and Simple learning dangerous.
+//
+// Exact input framing varies by encoder part; the 0x2/0x6 discrimination
+// nibbles and "two decryptions, concatenated" structure match the widely
+// published derivations and should be treated as illustrative.
+
+module KeeLoqLearn where
+
+import KeeLoq
+
+// ---------------------------------------------------------------------------
+// Derivation
+// ---------------------------------------------------------------------------
+
+// Simple learning: the device key IS the manufacturer key (serial ignored).
+deriveSimple : [64] -> [28] -> [64]
+deriveSimple mk _ = mk
+
+// Normal learning: two 32-bit blocks tagged with 0x2 / 0x6 in the top nibble,
+// each KeeLoq-decrypted under the manufacturer key, then concatenated.
+deriveNormal : [64] -> [28] -> [64]
+deriveNormal mk sn = hi # lo
+  where
+    lo = decrypt mk ((0x2 : [4]) # sn)
+    hi = decrypt mk ((0x6 : [4]) # sn)
+
+// Secure learning: same shape, but the two blocks come from a per-fob 64-bit
+// seed rather than the (public) serial.
+deriveSecure : [64] -> [64] -> [64]
+deriveSecure mk seed = hi # lo
+  where
+    lo = decrypt mk (drop`{32} seed)   // low 32 bits
+    hi = decrypt mk (take`{32} seed)   // high 32 bits
+
+// ---------------------------------------------------------------------------
+// Properties
+// ---------------------------------------------------------------------------
+
+// Regeneration: a receiver holding the manufacturer key reproduces exactly the
+// device key the fob was programmed with -- for Normal learning it needs only
+// the public serial. (Trivial as equality, but it is the whole design goal:
+// no per-fob key table required.)
+property normalRegenerates mk sn =
+    deriveNormal mk sn == deriveNormal mk sn
+
+// The point of learning is that the derived key actually drives a working hop:
+// encrypt under the derived key, decrypt under the *regenerated* key, recover
+// the counter. This ties derivation back to the rolling-code layer in KeeLoq.
+property normalHopRoundTrip mk sn b d ctr =
+    receiveCounter k (transmit k b d ctr) == ctr + 1
+  where k = deriveNormal mk sn
+
+property secureHopRoundTrip mk seed b d ctr =
+    receiveCounter k (transmit k b d ctr) == ctr + 1
+  where k = deriveSecure mk seed
+
+// Simple learning's fatal flaw, stated precisely: the device key does not
+// depend on the serial, so *every* fob shares one key. Crack one, forge all.
+property simpleKeyIgnoresSerial mk sn1 sn2 =
+    deriveSimple mk sn1 == deriveSimple mk sn2
+
+// By contrast, Normal learning's key genuinely depends on the serial: if two
+// derived keys are equal, the KeeLoq-decrypted serial blocks must have matched.
+// (Not a claim of injectivity -- decrypt is a bijection per fixed key, so in
+// fact distinct serials always give distinct 0x6-blocks; this records that.)
+property normalDependsOnSerial mk sn1 sn2 =
+    (sn1 != sn2) ==> (deriveNormal mk sn1 != deriveNormal mk sn2)

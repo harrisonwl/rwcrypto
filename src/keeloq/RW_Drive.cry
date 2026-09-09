@@ -1,0 +1,65 @@
+// End-to-end simulation of the compiled ReWire receiver (top_level.cry, emitted
+// by `rwc --cryptol`) driven against the reference cipher in KeeLoq.cry.
+//
+// We build encrypted hops with the reference `encrypt`, feed Learn/Frame/NoOp
+// commands into the synthesised state machine one cycle at a time, and check
+// that the verdict it emits matches what the software model predicts.
+
+module RW_Drive where
+
+import top_level (rw_device)
+import KeeLoq (encrypt, packHop)
+
+// --- Command encoding (must match the [94]-bit input layout rwc generated) ---
+// [ tag:2 | (Learn: key:64 disc:12 counter:16) | (Frame: pad:60 hop:32) ]
+
+noop : [94]
+noop = (0b00 : [2]) # zero
+
+learnCmd : [64] -> [12] -> [16] -> [94]
+learnCmd k d c = (0b01 : [2]) # k # d # c
+
+frameCmd : [32] -> [94]
+frameCmd hop = (0b10 : [2]) # (zero : [60]) # hop
+
+// --- Output decoding (the [5]-bit response) ---
+// Idle=0b00000, Busy=0b01000, Decided v = 0b10 # v where
+// Unlock=000 Replay=001 NeedSecond=010 Resynced=011 BadDisc=100 Unlearned=101
+vUnlock     = 0b10000 : [5]
+vReplay     = 0b10001 : [5]
+vNeedSecond = 0b10010 : [5]
+vResynced   = 0b10011 : [5]
+vBadDisc    = 0b10100 : [5]
+
+// Run: Learn, then one Frame, then NoOps long enough for the 528-round decrypt.
+// The verdict is the last non-Idle/Busy output (foldl keeps the last >= Decided).
+runOne : [64] -> [12] -> [16] -> [32] -> [5]
+runOne dkey ddisc base hop = foldl keep (0 : [5]) outs
+  where
+    ins  = [learnCmd dkey ddisc base, frameCmd hop] # (repeat`{560} noop)
+    outs = rw_device ins
+    keep acc o = if o >= vUnlock then o else acc
+
+// A device key and discrimination for the tests.
+key  = 0x5cec6701b79fd949 : [64]
+disc = 0xABC : [12]
+
+// Build a hop for a given button/counter under `key`/`disc`.
+hopFor : [4] -> [16] -> [32]
+hopFor btn ctr = encrypt key (packHop btn disc ctr)
+
+// Scenario A: counter one ahead of baseline -> Unlock.
+property scenarioUnlock =
+    runOne key disc 100 (hopFor 0x1 101) == vUnlock
+
+// Scenario B: receiver learned the WRONG discrimination -> BadDisc (wrong-key path).
+property scenarioBadDisc =
+    runOne key 0x000 100 (hopFor 0x1 101) == vBadDisc
+
+// Scenario C: counter far beyond the resync window -> Replay.
+property scenarioReplay =
+    runOne key disc 100 (hopFor 0x1 40100) == vReplay
+
+// Scenario D: counter inside the resync window, no pending -> NeedSecond.
+property scenarioNeedSecond =
+    runOne key disc 100 (hopFor 0x1 200) == vNeedSecond

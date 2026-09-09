@@ -1,0 +1,129 @@
+// KeeLoq block cipher + rolling-code ("hopping code") spec.
+//
+// KeeLoq is the classic car-remote / garage-door cipher: a 32-bit block,
+// 64-bit key, non-linear feedback shift register run for 528 rounds. On its
+// own it explains nothing about "one clicker, one car"; the exclusivity comes
+// from the rolling-code protocol built on top of it (see the counter/window
+// logic at the bottom, and the fuller state machine in KeeLoq.hs).
+//
+// Bit numbering here is LSB-first: `x ! n` is bit n (bit 0 = least
+// significant), matching the reference C descriptions of KeeLoq. Cryptol's
+// bare literals and `@` are MSB-first, so we use `!` everywhere it matters.
+
+module KeeLoq where
+
+// ---------------------------------------------------------------------------
+// Core cipher
+// ---------------------------------------------------------------------------
+
+// The non-linear function is a 5-input lookup: NLF(a4,a3,a2,a1,a0) is bit
+// (a4 a3 a2 a1 a0) of this constant. Value 0x3A5C742E is fixed by the design.
+NLF : [32]
+NLF = 0x3A5C742E
+
+// NLF over the encryption taps (bits 31,26,20,9,1 form the 5-bit index MSB..LSB).
+nlfEnc : [32] -> Bit
+nlfEnc y = NLF ! ([y ! 31, y ! 26, y ! 20, y ! 9, y ! 1] : [5])
+
+// NLF over the decryption taps. After a right-shift the encryption taps have
+// moved down by one, so we read bits 30,25,19,8,0 instead.
+nlfDec : [32] -> Bit
+nlfDec y = NLF ! ([y ! 30, y ! 25, y ! 19, y ! 8, y ! 0] : [5])
+
+// One forward round: shift right by one, inject a fresh MSB.
+//   msb' = NLF(taps) XOR bit0 XOR bit16 XOR keybit
+encRound : Bit -> [32] -> [32]
+encRound k y = (y >> 1) || (fb << 31)
+  where
+    f  = nlfEnc y ^ (y ! 0) ^ (y ! 16) ^ k
+    fb = if f then 1 else 0 : [32]
+
+// One inverse round: shift left by one, recover the bit that was shifted out.
+//   bit0 = msb XOR NLF(taps) XOR bit15 XOR keybit
+decRound : Bit -> [32] -> [32]
+decRound k y = (y << 1) || b0
+  where
+    f  = (y ! 31) ^ nlfDec y ^ (y ! 15) ^ k
+    b0 = if f then 1 else 0 : [32]
+
+// Round indices 0..527 as a concrete sequence we can index the key with.
+rounds : [528][16]
+rounds = [0 .. 527]
+
+// Encrypt: 528 rounds, round i uses key bit (i mod 64).
+encrypt : [64] -> [32] -> [32]
+encrypt key pt = states ! 0
+  where
+    ks     = [ key ! (i % 64) | i <- rounds ]
+    states = [pt] # [ encRound k y | y <- states | k <- ks ]
+
+// Decrypt: rounds run in reverse, so round i uses key bit ((15 - i) mod 64).
+decrypt : [64] -> [32] -> [32]
+decrypt key ct = states ! 0
+  where
+    ks     = [ key ! ((15 - i) % 64) | i <- rounds ]
+    states = [ct] # [ decRound k y | y <- states | k <- ks ]
+
+// ---------------------------------------------------------------------------
+// Correctness properties (checkable with :prove / :sat)
+// ---------------------------------------------------------------------------
+
+// Decryption inverts encryption for every key and every block.
+property encDecInverse key pt = decrypt key (encrypt key pt) == pt
+
+// ...and the other way round.
+property decEncInverse key ct = encrypt key (decrypt key ct) == ct
+
+// A single round is invertible on its own (the heart of the two proofs above).
+property roundInverse k y = decRound k (encRound k y) == y
+
+// ---------------------------------------------------------------------------
+// Rolling-code layer
+// ---------------------------------------------------------------------------
+//
+// The 32-bit block that gets encrypted (the "hop") carries a counter, a few
+// discrimination bits (usually low bits of the serial, a sanity check after
+// decryption), and the button/function code:
+//
+//   [ button : 4 | disc : 12 | counter : 16 ]   (MSB .. LSB)
+
+type Button  = [4]
+type Disc    = [12]
+type Counter = [16]
+
+packHop : Button -> Disc -> Counter -> [32]
+packHop b d c = b # d # c
+
+// Field extraction. `#` concatenates MSB-first, so the button is the top 4
+// bits and the counter is the low 16.
+hopButton : [32] -> Button
+hopButton w = take`{4} w
+
+hopDisc : [32] -> Disc
+hopDisc w = take`{12} (drop`{4} w)
+
+hopCounter : [32] -> Counter
+hopCounter w = drop`{16} w
+
+// A transmitter builds a hop by incrementing its counter and encrypting.
+transmit : [64] -> Button -> Disc -> Counter -> [32]
+transmit key b d ctr = encrypt key (packHop b d (ctr + 1))
+
+// The receiver decrypts and pulls the counter back out.
+receiveCounter : [64] -> [32] -> Counter
+receiveCounter key hop = hopCounter (decrypt key hop)
+
+// Round-trip: a receiver that shares the key recovers the transmitter's
+// (incremented) counter exactly. A receiver with any *other* key gets garbage,
+// which is precisely why a clicker only talks to its paired car.
+property hopRoundTrip key b d ctr =
+    receiveCounter key (transmit key b d ctr) == ctr + 1
+
+// The acceptance test the car actually runs: is the received counter within a
+// forward window of the last one it accepted? (Wraparound handled by [16] sub.)
+inWindow : {win} (fin win, win <= 65535) => Counter -> Counter -> Bit
+inWindow lastC rcvd = (delta != 0) && (delta <= `win)
+  where delta = rcvd - lastC
+
+// An immediate replay (same counter as last accepted) is always rejected.
+property replayRejected lastC = ~ (inWindow`{16} lastC lastC)

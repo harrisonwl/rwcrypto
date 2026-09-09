@@ -26,7 +26,7 @@ user-message: |
 # snapshot: ./custom-snapshot.yaml
 # snapshot: https://example.com/snapshots/2024-01-01.yaml
 snapshot:
-  url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/lts/24/36.yaml
+  url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/lts/24/49.yaml
 
 # User packages to be built.
 # Various formats can be used as shown in the example below.
@@ -37,7 +37,8 @@ snapshot:
 #   subdirs:
 #   - auto-update
 #   - wai
-packages: []
+packages:
+- .
 # The following packages have been ignored due to incompatibility with the
 # snapshot compiler, dependency conflicts with other packages
 # or unsatisfied dependencies.
@@ -53,6 +54,10 @@ packages: []
 #   commit: e7b331f14bcffb8367cd58fbfc8b40ec7642100a
 #
 # extra-deps: []
+extra-deps:
+- /Users/billharrison/ReWire/rewire-core
+- /Users/billharrison/ReWire/rewire-embedder
+- /Users/billharrison/ReWire/rewire-user
 
 # Override default flag values for project packages and extra-deps
 # flags: {}
